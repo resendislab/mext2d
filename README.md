@@ -1,4 +1,4 @@
-## Analysis scripts fro 16S
+## Analysis scripts for 16S
 
 Analysis scripts and discussion for the samples from Guanajuato. Also see
 the [Trello board](https://trello.com/b/rHtrpyiz/microbiome) for more info.
