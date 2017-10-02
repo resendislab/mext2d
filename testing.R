@@ -4,7 +4,7 @@
 
 # Scripts for running association tests on the genus level
 
-devtools::load_all("mbtools")
+library("mbtools")
 library(IHW)
 library(magrittr)
 library(pbapply)
