@@ -10,35 +10,46 @@ library(data.table)
 
 
 annotate_files <- function(path) {
-    fwd <- list.files(path, pattern="R1.+\\.fastq.gz", full.names = TRUE,
+    fwd <- list.files(path, pattern = "R1.+\\.fastq.gz", full.names = TRUE,
                       recursive = TRUE)
-    ids_fwd <- str_match(fwd, "(Placa.+)/(.+)_S")
+    ids_fwd <- str_match(fwd, "run_(\\d+)/(.+)_S")
     bwd <- list.files(path, pattern = "R2.+\\.fastq.gz", full.names = TRUE,
                       recursive = TRUE)
-    ids_rev <- str_match(bwd, "(Placa.+)/(.+)_S")
+    ids_rev <- str_match(bwd, "run_(\\d+)/(.+)_S")
     files_fwd <- data.table(run = ids_fwd[, 2],
                             sample = ids_fwd[, 3], forward = fwd)
     files_rev <- data.table(run = ids_rev[, 2],
                             sample = ids_rev[, 3], reverse = bwd)
-    files <- files_fwd[files_rev, on = .(plate, run, sample)]
+    files <- files_fwd[files_rev, on = .(run, sample)]
 
     return(files)
 }
 
 dada_errors <- function(samples) {
-    fwd_err <- learnErrors(samples$forward, nreads=2e6, multithread=TRUE,
-                           randomize=TRUE)
-    rev_err <- learnErrors(samples$reverse, nreads=2e6, multithread=TRUE,
-                           randomize=TRUE)
+    fwd_err <- learnErrors(samples$forward, nreads = 2e6,
+                           multithread = TRUE, randomize = TRUE)
+    rev_err <- learnErrors(samples$reverse, nreads = 2e6,
+                           multithread = TRUE, randomize = TRUE)
 
-    return(list(forward=list(fwd_err), reverse=list(rev_err)))
+    return(list(forward = list(fwd_err), reverse = list(rev_err)))
 }
 
-samples <- fread("samples.csv")
-samples <- add_files("filtered", samples)
+if (!file.exists("filtered")) {
+    cat("Preprocessing reads...\n")
+    raw <- annotate_files(".")
+    filtered <- copy(raw)
+    filtered[, forward := file.path("filtered", forward)]
+    filtered[, reverse := file.path("filtered", reverse)]
+    metrics <- filterAndTrim(raw$forward, filtered$forward,
+                             raw$reverse, filtered$reverse,
+                             trimLeft = 10, truncLen = c(240, 200),
+                             maxEE = 2, multithread = TRUE)
+    fwrite(data.table(metrics), "preprocessing.csv")
+}
+samples <- annotate_files("filtered")
 
 if (!file.exists("errors.rds")) {
-    err <- samples[, dada_errors(.SD), by="run"]
+    err <- samples[, dada_errors(.SD), by = "run"]
     saveRDS(err, "errors.rds")
 } else {
     err <- readRDS("errors.rds")
@@ -66,6 +77,8 @@ saveRDS(seqtab, "seqtab.rds")
 
 taxa <- assignTaxonomy(seqtab, "../silva_nr_v128_train_set.fa.gz",
                        multithread = TRUE)
+taxa <- addSpecies(taxa, "../silva_species_assignment_v128.fa.gz",
+                    verbose = TRUE)
 ps <- phyloseq(otu_table(seqtab, taxa_are_rows = FALSE),
                tax_table(taxa))
 saveRDS(ps, "taxonomy.rds")

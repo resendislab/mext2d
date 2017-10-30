@@ -4,10 +4,14 @@
 
 # Scripts for running association tests on the genus level
 
-library("mbtools")
+devtools::load_all("mbtools")
 library(IHW)
 library(magrittr)
-library(pbapply)
+library(DESeq2)
+
+non_zero_fraction <- 0.1
+min_abundance <- 8
+skip_all <- file.exists("data/tests.csv")
 
 ps <- readRDS("data/taxonomy.rds")
 counts <- as.matrix(taxa_count(ps))
@@ -16,6 +20,7 @@ counts <- as.matrix(taxa_count(ps))
 s <- tstrsplit(rownames(counts), "_")[[1]]  # sample ids
 dupes <- s %in% (which(table(s) != 1) %>% names()) %>% which()
 counts <- counts[-dupes, ]
+if (length(dupes) > 0) cat("found duplicates:", unique(s[dupes]), "\n")
 s <- s[-dupes]
 
 # get meta data and remove missing samples
@@ -26,46 +31,72 @@ setkey(meta, id)
 non_missing <- which(s %in% meta$id)
 s <- s[non_missing]
 counts <- counts[non_missing, ]
+rownames(counts) <- s
+
+# Exclude taxa that are absent in more than non_zero_fraction samples
+fraction_exclude <- colSums(counts >= 1) / nrow(counts) < non_zero_fraction
+cat("removed genera due to missing reads:",
+    sum(fraction_exclude), "\n")
+counts <- counts[, !fraction_exclude]
 meta <- meta[s]
 meta$status <- as.integer(meta$status)
 
-# Assemble DESeq2 data set
-library(DESeq2)
+# Exclude samples added by error (status = 7)
+meta <- meta[status < 7]
+counts <- counts[meta$id, ]
 
-logger <- file("testing.log", open="w")
-sink(file = logger, type = "message")
+# Assemble DESeq2 data set
 confounders <- c("gender")
-dds <- DESeqDataSetFromMatrix(t(counts), meta, design = ~ gender + status)
+exclude <- c("id", "stool_dna", confounders)
+vars <- names(meta[, !exclude, with = F])
+tests <- NULL
+
+
+if (!skip_all) {
+    for (v in vars) {
+        cat("---\nTesting", v, "\n---\n")
+        good <- !is.na(meta[[v]])
+        dds <- DESeqDataSetFromMatrix(t(counts[good, ]),
+            as.data.frame(meta[good]),
+            design = reformulate(c(confounders, v)))
+        dds <- estimateSizeFactors(dds, type = "poscount")
+        dds <- DESeq(dds, parallel = TRUE, quiet = TRUE, fitType = "local")
+        res <- lfcShrink(dds, coef = length(resultsNames(dds)),
+            res = results(dds))
+        res <- as.data.table(res)
+        res$genus <- colnames(counts)
+        res$variable <- v
+        res$n_test <- sum(good)
+        tests <- rbind(tests, res)
+    }
+} else {
+    cat("Old test file found. Skipping most tests...\n")
+}
+
+# As final variable use diabetes state, this way you can play around with the
+# DeSeq object afterwards
+good <- as.integer(meta$status) < 6
+meta[, status := as.factor(status)]
+dds <- DESeqDataSetFromMatrix(t(counts[good, ]), as.data.frame(meta[good]),
+                              design = ~ gender + status)
 dds <- estimateSizeFactors(dds, type = "poscount")
 dds <- DESeq(dds, parallel = TRUE)
-exclude <- c("status", "id", "stool_dna", confounders)
-vars <- names(meta[, !exclude, with=F])
-multi <- results(dds, name = "status")
-multi <- lfcShrink(dds, coef = 3, res = multi)
-multi <- as.data.table(multi)
-multi$genus <- colnames(counts)
-multi$variable <- "status"
-multi$n_test <- nrow(counts)
 
-tests <- pblapply(vars, function(v) {
-    message(paste("Testing", v, "...\n"))
-    good <- !is.na(meta[[v]])
-    dds <- DESeqDataSetFromMatrix(t(counts[good, ]), as.data.frame(meta[good]),
-                                  design = reformulate(c(confounders, v)))
-    dds <- estimateSizeFactors(dds, type = "poscount")
-    dds <- DESeq(dds, parallel = TRUE)
-    res <- lfcShrink(dds, coef = length(resultsNames(dds)), res = results(dds))
+multi <- NULL
+for (level in 2:5) {
+    name <- paste0("status_", level, "_vs_1")
+    res <- results(dds, name = name)
+    res <- lfcShrink(dds, coef = which(resultsNames(dds) == name), res = res)
     res <- as.data.table(res)
     res$genus <- colnames(counts)
-    res$variable <- v
-    res$n_test <- sum(good)
-    res
-})
-sink()
-close(logger)
-
-# Remove genus with a baseMean smaller 1 to avoid a bimodal pval distribution
-multi <- rbind(multi, rbindlist(tests))[baseMean >= 1]
-weighting <- ihw(pvalue ~ baseMean, multi)
+    res$variable <- name
+    res$n_test <- nrow(meta[status == level])
+    multi <- rbind(multi, res)
+}
+# Remove genus with a small baseMean to avoid a bimodal pval distribution
+multi <- rbind(multi, tests)[baseMean >= min_abundance]
+weighting <- ihw(pvalue ~ baseMean, multi, alpha = 0.05)
 multi[, padj := adj_pvalues(weighting)]
-fwrite(multi[order(padj, variable)], "data/tests.csv")
+
+if (!skip_all)
+    fwrite(multi[order(padj, variable)], "data/tests.csv")
