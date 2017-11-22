@@ -9,7 +9,7 @@ library(IHW)
 library(magrittr)
 library(DESeq2)
 
-non_zero_fraction <- 0.1
+zero_fraction <- 0.1
 min_abundance <- 8
 skip_all <- file.exists("data/tests.csv")
 
@@ -33,8 +33,8 @@ s <- s[non_missing]
 counts <- counts[non_missing, ]
 rownames(counts) <- s
 
-# Exclude taxa that are absent in more than non_zero_fraction samples
-fraction_exclude <- colSums(counts >= 1) / nrow(counts) < non_zero_fraction
+# Exclude taxa that are absent in more than zero_fraction samples
+fraction_exclude <- colSums(counts >= 1) / nrow(counts) < zero_fraction
 cat("removed genera due to missing reads:",
     sum(fraction_exclude), "\n")
 counts <- counts[, !fraction_exclude]
@@ -42,7 +42,7 @@ meta <- meta[s]
 meta$status <- as.integer(meta$status)
 
 # Exclude samples added by error (status = 7)
-meta <- meta[status < 7]
+meta <- meta[status < 6]
 counts <- counts[meta$id, ]
 
 # Assemble DESeq2 data set

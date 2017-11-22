@@ -10,7 +10,7 @@ to R notebooks.
 
 ### Trimming and filtering
 
-This was done using the `filterAndTrim` method from dada2. > 75% of reads pass
+This was done using the `filterAndTrim` method from dada2. >75% of reads pass
 the filters.
 
 **Parameters**:
@@ -55,8 +55,8 @@ Tests associations between genera and clinical variables
   using the mean normalized count across all samples. This is supposed to remove
   the dependence of testing power on the actual abundance. There is no discernible
   enrichment of low p-values for low abundance genera (rather the reverse is true)
-- genera with a `baseMean` smaller 1 (not even a single count in average) are removed
+- genera with a `baseMean` smaller 8 (few counts in average) are removed
   since they result in a bimodal p-val histogram (no FDR adjustment methods can deal with that)
-  this parameter could be increased to remove low abundance genera from the analysis
-  (maybe 10 would be a good cutoff)
+  ~~this parameter could be increased to remove low abundance genera from the analysis
+  (maybe 10 would be a good cutoff)~~
 
