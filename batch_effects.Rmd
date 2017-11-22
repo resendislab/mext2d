@@ -43,11 +43,23 @@ ggplot(reads[reads > 0], aes(x=rank, y=reads)) +
 
 There is nothing striking here. Maybe a tiny effect where low IDs have
 a higher fraction of low abundance sequences.
-We can check whether individual sequences are correlated with their IDs.
+
+We can check whether individual sequences are correlated with their IDs. To get
+an idea how those correlations would distribute under a model with no
+association between ID rank and reads we will also simulate read counts under
+a Poisson model.
 
 ```{r}
+par(mfrow=1:2)
 cors <- reads[, cor(reads, rank, method="spearman"), by=taxa][, V1]
-hist(cors)
+hist(cors, col="tomato", main="real", breaks=16,
+     xlim=c(-0.3, 0.3), ylim=c(0, 6000))
+
+# simulate reads for 20,000 sequences across 500 samples
+sim_reads <- matrix(rpois(500*20000, mean(reads$reads)), ncol=20000)
+sim_cors <- apply(sim_reads, 2, function(x) cor(x, 1:500, method="spearman"))
+hist(sim_cors, col="slateblue", main="simulated (no effect)", breaks=16,
+     xlim=c(-0.3, 0.3), ylim=c(0, 6000))
 ```
 
 Maximum correlations are ~0.2 which is not really substantial.
