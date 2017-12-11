@@ -6,6 +6,9 @@ output:
     toc: true
     toc_float:
       collapsed: false
+  pdf_document:
+    latex_engine: lualatex
+    highlight: tango
 ---
 
 ## Looking for batch effects
@@ -27,33 +30,62 @@ the reads stratified by sequence and ID.
 ps <- readRDS("../data/taxonomy.rds")
 
 reads <- taxa_count(ps, lev=NA)[order(sample)]
+reads[, id := tstrsplit(sample, "_")[[1]]]
 ```
 
-Now we can plot the marginal distributions of the ordered samples. IDs are not
-evenly spaced so we will rather use their rank.
+Let us merge that with the information we have on sample extraction.
+
+```{r}
+library(stringr)
+meta <- fread("../data/meta_extraction.csv")
+names(meta) <- c("id", "collection", "extraction", "scientist")
+meta[scientist == "", scientist := NA]
+meta[, id := as.character(id)]
+
+# Unify dates
+months <- c("jan", "apr", "aug", "dec")  # spanish -> english
+names(months) <- c("ene", "abr", "ago", "dic")
+meta[, extraction := as.IDate(
+  str_replace_all(tolower(extraction), months), "%d.%b.%Y")]
+meta[, collection := as.IDate(collection, "%m/%d/%Y")]
+
+reads <- meta[reads, on="id"]
+```
+
+Now we can plot the marginal distributions of the samples by collection date.
 
 ```{r, fig.width=16, fig.height=4}
 library(ggplot2)
 
-reads$rank <- as.numeric(factor(reads$sample))
-
-ggplot(reads[reads > 0], aes(x=rank, y=reads)) +
-    geom_boxplot(aes(group=rank)) + stat_smooth() + scale_y_log10()
+ggplot(reads[reads > 0], aes(x=collection, y=reads)) +
+    geom_boxplot(aes(group=collection)) + stat_smooth() + scale_y_log10()
 ```
 
-There is nothing striking here. Maybe a tiny effect where low IDs have
-a higher fraction of low abundance sequences.
+And the same for the extraction date...
 
-We can check whether individual sequences are correlated with their IDs. To get
-an idea how those correlations would distribute under a model with no
-association between ID rank and reads we will also simulate read counts under
-a Poisson model.
+```{r, fig.width=16, fig.height=4}
+ggplot(reads[reads > 0], aes(x=extraction, y=reads)) +
+    geom_boxplot(aes(group=extraction)) + stat_smooth() + scale_y_log10()
+```
+
+...or the scientist managing the extraction.
 
 ```{r}
-cors <- reads[, cor(reads, rank, method="spearman"), by=taxa][, V1]
+ggplot(reads[reads > 0], aes(x=scientist, y=reads, col=scientist)) +
+    geom_boxplot(aes(group=scientist)) + geom_jitter(alpha=0.1, shape=".") + scale_y_log10()
+```
+
+We can check whether individual sequences are correlated with their extraction dates. To get
+an idea how those correlations would distribute under a model with no
+association between date rank and reads we will also simulate read counts under
+a Poisson model.
+
+```{r, warning=FALSE}
+cors <- reads[!is.na(collection),
+  cor(reads, as.numeric(collection), method="spearman"), by=taxa][, V1]
 
 # simulate reads for 20,000 sequences across 500 samples
-sim_reads <- matrix(rpois(500*20000, mean(reads$reads)), ncol=20000)
+sim_reads <- matrix(rpois(500*20000, mean(reads$reads, na.rm=T)), ncol=20000)
 sim_cors <- apply(sim_reads, 2, function(x) cor(x, 1:500, method="spearman"))
 
 data <- rbind(data.frame(correlation=cors, type="real"),
@@ -111,7 +143,7 @@ to the association analysis anyways.
 We can also check the correlation again.
 
 ```{r}
-cors <- reads[, cor(reads, run, method="spearman"), by=taxa][, V1]
+cors <- reads[!is.na(reads), cor(reads, run, method="spearman"), by=taxa][, V1]
 hist(cors)
 ```
 
