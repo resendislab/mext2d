@@ -5,7 +5,6 @@
 # Scripts for running association tests on the genus level
 
 devtools::load_all("mbtools")
-library(IHW)
 library(magrittr)
 library(DESeq2)
 
@@ -95,8 +94,7 @@ for (level in 2:5) {
 }
 # Remove genus with a small baseMean to avoid a bimodal pval distribution
 multi <- rbind(multi, tests)[baseMean >= min_abundance]
-weighting <- ihw(pvalue ~ baseMean, multi, alpha = 0.05)
-multi[, padj := adj_pvalues(weighting)]
+multi[, padj := p.adjust(pvalue)]
 
 if (!skip_all)
     fwrite(multi[order(padj, variable)], "data/tests.csv")

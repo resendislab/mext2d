@@ -37,7 +37,7 @@ Let us merge that with the information we have on sample extraction.
 
 ```{r}
 library(stringr)
-meta <- fread("../data/meta_extraction.csv")
+meta <- fread("meta_extraction.csv")
 names(meta) <- c("id", "collection", "extraction", "scientist")
 meta[scientist == "", scientist := NA]
 meta[, id := as.character(id)]
