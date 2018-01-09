@@ -5,36 +5,26 @@ the [Trello board](https://trello.com/b/rHtrpyiz/microbiome) for more info.
 
 Makes use of helper functions from our [general pipeline](https://github.com/resendislab/microbiome).
 
-Still in a very rudimentary stage. After discussion this should be converted
-to R notebooks.
+### Getting set up
 
-### Trimming and filtering
+To make installation easier all functionality required is implemented is
+delivered with a [specialized R package](https://github.com/resendislab/microbiome).
+You can use the provided docker container from there or install it yourself.
 
-This was done using the `filterAndTrim` method from dada2. >75% of reads pass
-the filters.
+You will need [R (>=3.4)](https://r-project.org). To install the package you
+will need `devtools` and bioconductor. Open an R session and run the following:
 
-**Parameters**:
+```R
+install.packages("devtools")
+source("https://bioconductor.org/biocLite.R")
+biocLite("BiocInstaller")
+devtools::install_github("cdiener/microbiome/mbtools")
+```
 
-- trimLeft: 10bp (standard for Illumina)
-- truncLen: 240 and 200 (forward and reverse)
-- maxEE: 2 (max expected errors in read using the Illumina error model)
+Now you're ready to go :)
 
-### Sequence variants
-
-**source file(s)**: `build_taxonomy.R`
-
-Basically goes all the way from filtered FastQ to sequence variants + taxonomy.
-
-**Comments:**
-
-- error models are fitted to each run individually as recommended by Ben
-- `anntotate_files` will probably become obsolete since the only thing you really
-  need is the ID ("folio")
-- there are many bimeras, however most of the reads are kept after bimera-removal
-  (> 70%)
-- taxonomy assignment uses RDP with the SILVA DB v128
-- still missing the dada2 species assignment by exact match
-- final product is a [phyloseq](https://joey711.github.io/phyloseq/) object
+All individual steps are contained in its own sub-folder along with
+documentation.
 
 ### Differential analysis (association tests)
 

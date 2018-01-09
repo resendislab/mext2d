@@ -1,0 +1,586 @@
+                                                  FOLIO 
+                                            0.000000000 
+                                      Género (1=hombre) 
+                                            0.000000000 
+                                              Heces_DNA 
+                                            0.000000000 
+                                                    TAS 
+                                            0.000000000 
+                                                    TAD 
+                                            0.000000000 
+                                                Peso_kg 
+                                            0.000000000 
+                                                  Talla 
+                                            0.000000000 
+                                                IMC cal 
+                                            0.000000000 
+ sobrepeso_obesidad(0=normopeso,1=sobrepeso,2=obesidad) 
+                                            0.000000000 
+                                              Glucosa_0 
+                                            0.000000000 
+                                        status_CTOGreal 
+                                            0.000000000 
+                                            IMC_mayor27 
+                                            0.002252252 
+                                                  FR_dm 
+                                            0.002252252 
+                                      porcent_grasa_tan 
+                                            0.002252252 
+                                                   Edad 
+                                            0.011261261 
+                                            Glucosa_120 
+                                            0.011261261 
+                                             Glucosa_60 
+                                            0.013513514 
+                                       inc AUCgluc_OGTT 
+                                            0.013513514 
+                                           AUCgluc_OGTT 
+                                            0.013513514 
+                                           Sedentarismo 
+                                            0.018018018 
+                                          Mayor_45_años 
+                                            0.018018018 
+                                             Ant_Fam_DM 
+                                            0.018018018 
+                                                    HAS 
+                                            0.018018018 
+                                            Prediabetes 
+                                            0.018018018 
+                                     Enf_Cardiovascular 
+                                            0.018018018 
+                                    Ant_Prod_macro_ DMG 
+                                            0.018018018 
+                                Ant_Ovario_poliquístico 
+                                            0.018018018 
+                                          triglicéridos 
+                                            0.020270270 
+                        hipertrigliceridemia(0=no,1=si) 
+                                            0.020270270 
+                                             Glucosa_90 
+                                            0.022522523 
+                                             Glucosa_30 
+                                            0.024774775 
+                                       colesterol_total 
+                                            0.029279279 
+                         hipercolesterolemia(0=no,1=si) 
+                                            0.029279279 
+                                    Acantosis_Nigricans 
+                                            0.031531532 
+                                                    WMS 
+                                            0.036036036 
+                                                     cc 
+                                            0.067567568 
+                                                    cca 
+                                            0.067567568 
+                                          Presión_Pulso 
+                                            0.083333333 
+                                                    TAM 
+                                            0.083333333 
+                                           dislipidemia 
+                                            0.108108108 
+                                                   HDLc 
+                                            0.108108108 
+                     hipoalfalipoproteinemia(0=no,1=si) 
+                                            0.108108108 
+                                                  VLDLc 
+                                            0.157657658 
+                                                   LDLc 
+                                            0.164414414 
+                                    hiperLDL(0=no,1=si) 
+                                            0.164414414 
+                                                HOMA-IR 
+                                            0.189189189 
+                             Ins_resist(HOMA,0=no,1=si) 
+                                            0.189189189 
+                                                 HOMA-b 
+                                            0.189189189 
+                                                   Ins0 
+                                            0.189189189 
+                                              1/insulin 
+                                            0.189189189 
+                                    Insulin sensitivity 
+                                            0.191441441 
+                         Insulin_resistance (0=no,1=si) 
+                                            0.191441441 
+                                                 QUICKI 
+                                            0.191441441 
+                                                 Ins120 
+                                            0.191441441 
+                                        AIR (DI30/DG30) 
+                                            0.193693694 
+                                                  Ins30 
+                                            0.193693694 
+                                                  Ins60 
+                                            0.193693694 
+                                                  Ins90 
+                                            0.193693694 
+                                       inc AUCInsu_OGTT 
+                                            0.193693694 
+                                            AUCins_OGTT 
+                                            0.193693694 
+                                                Oral_DI 
+                                            0.193693694 
+                                       AUCins/gluc_OGTT 
+                                            0.195945946 
+                                            Disp_index2 
+                                            0.195945946 
+                                   Disf_celB(1=si,2=no) 
+                                            0.195945946 
+                                      Inc_ins/gluc_OGTT 
+                                            0.198198198 
+                                 Disp_Index(B_function) 
+                                            0.209459459 
+                                          Indice_cc:cca 
+                                            0.211711712 
+                                        Indice_cc:talla 
+                                            0.213963964 
+                                    porcent_grasa_plico 
+                                            0.250000000 
+                                    rango_gras_visceral 
+                                            0.250000000 
+                                        edad_metabólica 
+                                            0.250000000 
+                                             masa_grasa 
+                                            0.252252252 
+                                       masa_libre_grasa 
+                                            0.252252252 
+                                              masa_musc 
+                                            0.252252252 
+                                              masa_ósea 
+                                            0.252252252 
+                                              met_basal 
+                                            0.252252252 
+                                     consumo_diario_cal 
+                                            0.252252252 
+                                          por_agua_corp 
+                                            0.256756757 
+                                              masa_agua 
+                                            0.256756757 
+                                              gly_index 
+                                            0.403153153 
+                                                  calor 
+                                            0.403153153 
+                                                   prot 
+                                            0.403153153 
+                                                  aprot 
+                                            0.403153153 
+                                                   afat 
+                                            0.403153153 
+                                                   vfat 
+                                            0.403153153 
+                                                  carbo 
+                                            0.403153153 
+                                                   sucr 
+                                            0.403153153 
+                                                  fruct 
+                                            0.403153153 
+                                                   lact 
+                                            0.403153153 
+                                                     st 
+                                            0.403153153 
+                                                   malt 
+                                            0.403153153 
+                                                    glu 
+                                            0.403153153 
+                                                  crude 
+                                            0.403153153 
+                                                  dtfib 
+                                            0.403153153 
+                                                  aofib 
+                                            0.403153153 
+                                                   engl 
+                                            0.403153153 
+                                                  solfb 
+                                            0.403153153 
+                                                   pect 
+                                            0.403153153 
+                                                  insfb 
+                                            0.403153153 
+                                                  hemcl 
+                                            0.403153153 
+                                                  cellu 
+                                            0.403153153 
+                                                   lign 
+                                            0.403153153 
+                                                   calc 
+                                            0.403153153 
+                                                   iron 
+                                            0.403153153 
+                                                   heme 
+                                            0.403153153 
+                                                   magn 
+                                            0.403153153 
+                                                     ph 
+                                            0.403153153 
+                                                      k 
+                                            0.403153153 
+                                                 sodium 
+                                            0.403153153 
+                                                     zn 
+                                            0.403153153 
+                                                     cu 
+                                            0.403153153 
+                                                     mn 
+                                            0.403153153 
+                                                 iodine 
+                                            0.403153153 
+                                                     se 
+                                            0.403153153 
+                                                   vitc 
+                                            0.403153153 
+                                                     b1 
+                                            0.403153153 
+                                                     b2 
+                                            0.403153153 
+                                                 niacin 
+                                            0.403153153 
+                                                  panto 
+                                            0.403153153 
+                                                     b6 
+                                            0.403153153 
+                                                  glyb6 
+                                            0.403153153 
+                                                 folate 
+                                            0.403153153 
+                                                    b12 
+                                            0.403153153 
+                                                   vitk 
+                                            0.403153153 
+                                                retinol 
+                                            0.403153153 
+                                                  carot 
+                                            0.403153153 
+                                                   acar 
+                                            0.403153153 
+                                                   bcar 
+                                            0.403153153 
+                                                  bcryp 
+                                            0.403153153 
+                                                   lyco 
+                                            0.403153153 
+                                                    lut 
+                                            0.403153153 
+                                                   vitd 
+                                            0.403153153 
+                                                   vite 
+                                            0.403153153 
+                                                 viteiu 
+                                            0.403153153 
+                                                  atoco 
+                                            0.403153153 
+                                                  btoco 
+                                            0.403153153 
+                                                  gtoco 
+                                            0.403153153 
+                                                  dtoco 
+                                            0.403153153 
+                                                  ttoco 
+                                            0.403153153 
+                                                   ateq 
+                                            0.403153153 
+                                                 satfat 
+                                            0.403153153 
+                                                 monfat 
+                                            0.403153153 
+                                                   poly 
+                                            0.403153153 
+                                                   chol 
+                                            0.403153153 
+                                                   alco 
+                                            0.403153153 
+                                                   caff 
+                                            0.403153153 
+                                                nitrate 
+                                            0.403153153 
+                                                     cg 
+                                            0.403153153 
+                                                     ig 
+                                            0.403153153 
+                                                tfatsmp 
+                                            0.403153153 
+                                                    f40 
+                                            0.403153153 
+                                                    f60 
+                                            0.403153153 
+                                                    f80 
+                                            0.403153153 
+                                                   f100 
+                                            0.403153153 
+                                                   f120 
+                                            0.403153153 
+                                                 f12091 
+                                            0.403153153 
+                                                   f140 
+                                            0.403153153 
+                                                 f14091 
+                                            0.403153153 
+                                                   f160 
+                                            0.403153153 
+                                                 f16091 
+                                            0.403153153 
+                                                   f180 
+                                            0.403153153 
+                                                 f18091 
+                                            0.403153153 
+                                                   f161 
+                                            0.403153153 
+                                                f16t191 
+                                            0.403153153 
+                                                   f181 
+                                            0.403153153 
+                                               cis18191 
+                                            0.403153153 
+                                                tr18191 
+                                            0.403153153 
+                                                   f201 
+                                            0.403153153 
+                                                   f221 
+                                            0.403153153 
+                                                   f182 
+                                            0.403153153 
+                                               cis18291 
+                                            0.403153153 
+                                                tr18291 
+                                            0.403153153 
+                                                ct18291 
+                                            0.403153153 
+                                                   f183 
+                                            0.403153153 
+                                                 f18391 
+                                            0.403153153 
+                                                   f184 
+                                            0.403153153 
+                                                   f204 
+                                            0.403153153 
+                                                 f20491 
+                                            0.403153153 
+                                                   f205 
+                                            0.403153153 
+                                                 f20591 
+                                            0.403153153 
+                                                   f225 
+                                            0.403153153 
+                                                   f226 
+                                            0.403153153 
+                                                 f22691 
+                                            0.403153153 
+                                               hr_total 
+                                            0.403153153 
+                                               hora_tot 
+                                            0.403153153 
+                                                met_tot 
+                                            0.403153153 
+             edocivil(1=cas,2=solt,3=3,4=div, 5=5, 6=6) 
+                                            0.412162162 
+                                            ind_alcohol 
+                                            0.416666667 
+                                               gly_load 
+                                            0.418918919 
+                                                 dormir 
+                                            0.421171171 
+                                             min_dormir 
+                                            0.421171171 
+                                                metdorm 
+                                            0.421171171 
+                    tabaquismo(1=no,2=tab antiguo,3=si) 
+                                            0.425675676 
+                                                 act_vd 
+                                            0.425675676 
+                                                  hr_vd 
+                                            0.425675676 
+                                                 min_vd 
+                                            0.425675676 
+                                                   inac 
+                                            0.434684685 
+                                              hora_inac 
+                                            0.436936937 
+                                               min_inac 
+                                            0.436936937 
+                                                depind2 
+                                            0.445945946 
+                                          depdico(1=si) 
+                                            0.445945946 
+                                        depdico16(1=si) 
+                                            0.445945946 
+                  educacion(1=prim,2=sec,3=prep,4=prof) 
+                                            0.450450450 
+                                          frec_cardiaca 
+                                            0.486486486 
+                                            pr_interval 
+                                            0.486486486 
+                                                    qrs 
+                                            0.486486486 
+                                                    qtc 
+                                            0.486486486 
+                                                rv5+sv1 
+                                            0.486486486 
+                                                eje_qrs 
+                                            0.488738739 
+                                                  eje_t 
+                                            0.488738739 
+                                     interpretación_ecg 
+                                            0.488738739 
+                                                depind1 
+                                            0.533783784 
+                                                  HbA1c 
+                                            0.576576577 
+                                           KILOCALORÍAS 
+                                            0.639639640 
+                                           PROTEÍNA (%) 
+                                            0.639639640 
+                                            LÌPIDOS (%) 
+                                            0.639639640 
+                                                AGS (%) 
+                                            0.639639640 
+                                                AGM (%) 
+                                            0.639639640 
+                                                AGP (%) 
+                                            0.639639640 
+                                HIDRATOS DE CARBONO (%) 
+                                            0.639639640 
+                                  AZÚCAR (EQUIVALENTES) 
+                                            0.639639640 
+                                   CARNE (EQUIVALENTES) 
+                                            0.639639640 
+                                  CEREAL (EQUIVALENTES) 
+                                            0.639639640 
+                                  ETANOL (EQUIVALENTES) 
+                                            0.639639640 
+                                  FRUTAS (EQUIVALENTES) 
+                                            0.639639640 
+                                 LIPIDOS (EQUIVALENTES) 
+                                            0.639639640 
+                                   LECHE (EQUIVALENTES) 
+                                            0.639639640 
+                             LEGUMINOSAS (EQUIVALENTES) 
+                                            0.639639640 
+                                VERDURAS (EQUIVALENTES) 
+                                            0.639639640 
+                                          PROTEÌNA (GR) 
+                                            0.639639640 
+                                           LÍPIDOS (GR) 
+                                            0.639639640 
+                                               AGS (GR) 
+                                            0.639639640 
+                                               AGM (GR) 
+                                            0.639639640 
+                                               AGP (GR) 
+                                            0.639639640 
+                                        COLESTEROL (MG) 
+                                            0.639639640 
+                                                HC (GR) 
+                                            0.639639640 
+                                            AZÚCAR (GR) 
+                                            0.639639640 
+                                             FIBRA (GR) 
+                                            0.639639640 
+                                          LÍQUIDOS (ML) 
+                                            0.639639640 
+                                       VITAMINA A (MCG) 
+                                            0.639639640 
+                                       VITAMINA B1 (MG) 
+                                            0.639639640 
+                                       VITAMINA B2 (MG) 
+                                            0.639639640 
+                                       VITAMINA B6 (MG) 
+                                            0.639639640 
+                                     VITAMINA B12 (MCG) 
+                                            0.639639640 
+                                        VITAMINA C (MG) 
+                                            0.639639640 
+                                     ÁCIDO FÓLICO (MCG) 
+                                            0.639639640 
+                                      ÁCIDO PANTOTÉNICO 
+                                            0.639639640 
+                                           NIACINA (MG) 
+                                            0.639639640 
+                                        VITAMINA E (MG) 
+                                            0.639639640 
+                                            CALCIO (MG) 
+                                            0.639639640 
+                                            HIERRO (MG) 
+                                            0.639639640 
+                                           POTASIO (MG) 
+                                            0.639639640 
+                                          MAGNESIO (MG) 
+                                            0.639639640 
+                                             SODIO (MG) 
+                                            0.639639640 
+                                           FÓSFORO (MG) 
+                                            0.639639640 
+                                          SELENIO (MCG) 
+                                            0.639639640 
+                                              ZINC (MG) 
+                                            0.639639640 
+                                        ETANOL (GRAMOS) 
+                                            0.639639640 
+             EDAD INICIO CONSUMO REFRESCO (EICR) (AÑOS) 
+                                            0.639639640 
+                                       EICR-DÍAS/SEMANA 
+                                            0.639639640 
+                                     EICR-CANTIDAD (ML) 
+                                            0.639639640 
+EDAD INICIO CONSUMO JUGO INDUSTRIALIZADO (EICJI) (AÑOS) 
+                                            0.639639640 
+                                 EICJI-DÍAS/SEMANA (ML) 
+                                            0.639639640 
+                                    EICJI-CANTIDAD (ML) 
+                                            0.639639640 
+                                  AGUA NATURAL/DÍA (ML) 
+                                            0.639639640 
+                                 AGUA DE FRUTA/DÍA (ML) 
+                                            0.639639640 
+                                     NO. DE COMIDAS/DÍA 
+                                            0.639639640 
+                               CONSUMO DE REFRESCO (CR) 
+                                            0.639639640 
+                                         CR-DÍAS/SEMANA 
+                                            0.639639640 
+                                   CR-CANTIDAD/DÍA (ML) 
+                                            0.639639640 
+                                      MARCA DE REFRESCO 
+                                            0.639639640 
+                CONSUMO DE JUGOS INDUSTRIALIZADOS (CJI) 
+                                            0.639639640 
+                                        CJI DÍAS/SEMANA 
+                                            0.639639640 
+                                   JI-CANTIDAD/DÍA (ML) 
+                                            0.639639640 
+                                            MARCA DE JI 
+                                            0.639639640 
+                                   CONSUMO DE EMBUTIDOS 
+                                            0.639639640 
+                                  EMBUTIDOS-DÍAS/SEMANA 
+                                            0.639639640 
+                                     MARCA DE EMBUTIDOS 
+                                            0.639639640 
+                                    CONSUMO DE FRITURAS 
+                                            0.639639640 
+                                    FRITURAS-DÍAS/SEMA0 
+                                            0.639639640 
+                                      MARCA DE FRITURAS 
+                                            0.639639640 
+                         ALIMENTOS INDUSTRIALIZADOS/DÍA 
+                                            0.639639640 
+                 ALIMENTO INDUSTRIALIZADO MÁS FRECUENTE 
+                                            0.639639640 
+                   HA LLEVADO PLAN DE ALIMENTACIÓN (PA) 
+                                            0.639639640 
+                                     PA-NÚMERO DE VECES 
+                                            0.639639640 
+                                          PA-CONSTANCIA 
+                                            0.639639640 
+                           PA-CONSTANCIA-TIEMPO (MESES) 
+                                            0.639639640 
+                                          PA-DIFICULTAD 
+                                            0.639639640 
+                                      PA-DISPONIBILIDAD 
+                                            0.639639640 
+                                        CONTROL DE PESO 
+                                            0.639639640 
+                                                    OMS 
+                                            0.677927928 
+                                                IMT_Izq 
+                                            0.720720721 
+                                                IMT_Der 
+                                            0.725225225 
