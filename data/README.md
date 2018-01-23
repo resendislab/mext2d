@@ -9,4 +9,5 @@ Contains various input and intermediate output files.
 |taxonomy.rds      | Variant table in phyloseq format.           |
 |variants.csv      | Sequence variants and abundances in samples.|
 |taxa.csv          | Taxonomy assignment for each variant.       |
-|tests.csv         | Association tests for genera x clinical.    |
+|tests_genus.csv   | Association tests for genera x clinical.    |
+|tests_variants.csv| Association tests for variant x clinical.   |
