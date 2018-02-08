@@ -80,5 +80,5 @@ for (i in 1:nrow(comps)) {
 }
 # Remove genus with a small baseMean to avoid a bimodal pval distribution
 multi <- multi[baseMean >= min_abundance]
-multi[, padj := p.adjust(pvalue)]
+multi[, padj := p.adjust(pvalue, method = "fdr")]
 fwrite(multi[order(padj, variable)], "../data/tests_who_genus.csv")

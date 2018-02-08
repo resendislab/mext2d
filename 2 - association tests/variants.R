@@ -9,8 +9,8 @@ library(magrittr)
 library(DESeq2)
 
 zero_fraction <- 0.1
-min_abundance <- 8
-skip_all <- file.exists("../data/tests_species.csv")
+min_abundance <- 10
+skip_all <- file.exists("../data/tests_variants.csv")
 
 ps <- readRDS("../data/taxonomy.rds")
 taxa <- taxa_count(ps, lev=NA)
@@ -35,9 +35,9 @@ counts <- counts[non_missing, ]
 rownames(counts) <- s
 
 # Exclude taxa that are absent in more than zero_fraction samples
-fraction_exclude <- colSums(counts >= 1) / nrow(counts) < zero_fraction
+fraction_exclude <- (colSums(counts >= 1) / nrow(counts)) < zero_fraction
 cat("removed variants due to missing reads:",
-    sum(fraction_exclude), "\n")
+    sum(!fraction_exclude), "\n")
 counts <- counts[, !fraction_exclude]
 meta <- meta[s]
 meta$status <- as.integer(meta$status)
@@ -96,7 +96,7 @@ for (level in 2:5) {
 }
 # Remove genus with a small baseMean to avoid a bimodal pval distribution
 multi <- rbind(multi, tests)[baseMean >= min_abundance]
-multi[, padj := p.adjust(pvalue)]
+multi[, padj := p.adjust(pvalue, method = "fdr")]
 variant_map <- taxa[, .(species = unique(species)), by="taxa"]
 setkey(variant_map, "taxa")
 multi[, species := variant_map[variant, species]]
