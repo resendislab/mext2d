@@ -37,7 +37,7 @@ rownames(counts) <- s
 # Exclude taxa that are absent in more than zero_fraction samples
 fraction_exclude <- (colSums(counts >= 1) / nrow(counts)) < zero_fraction
 cat("removed variants due to missing reads:",
-    sum(!fraction_exclude), "\n")
+    sum(fraction_exclude), "\n")
 counts <- counts[, !fraction_exclude]
 meta <- meta[s]
 meta$status <- as.integer(meta$status)
