@@ -41,7 +41,7 @@ meta <- meta[s]
 meta$status <- as.integer(meta$status)
 
 # Exclude samples added by error (status = 7)
-meta <- meta[status < 6]
+meta <- meta[status < 7]
 counts <- counts[meta$id, ]
 
 # Assemble DESeq2 data set
@@ -74,24 +74,25 @@ if (!skip_all) {
 
 # As final variable use diabetes state, this way you can play around with the
 # DeSeq object afterwards
-good <- as.integer(meta$status) < 6
+good <- as.integer(meta$status) < 7
 meta[, status := as.factor(status)]
 dds <- DESeqDataSetFromMatrix(t(counts[good, ]), as.data.frame(meta[good]),
                               design = ~ gender + status)
 dds <- estimateSizeFactors(dds, type = "poscount")
 dds <- DESeq(dds, parallel = TRUE)
 
-multi <- NULL
-for (level in 2:5) {
-    name <- paste0("status_", level, "_vs_1")
-    res <- results(dds, name = name)
-    res <- lfcShrink(dds, coef = which(resultsNames(dds) == name), res = res)
+combinations <- combn(6:1, 2)
+multi <- apply(combinations, 2, function(comb) {
+    name <- paste0("status_", comb[1], "_vs_", comb[2])
+    res <- results(dds, contrast = c("status", comb[1], comb[2]))
+    res <- lfcShrink(dds, contrast = c("status", comb[1], comb[2]), res = res)
     res <- as.data.table(res)
     res$genus <- colnames(counts)
     res$variable <- name
-    res$n_test <- nrow(meta[status == level])
-    multi <- rbind(multi, res)
-}
+    res$n_test <- min(meta[, table(status)[comb]])
+    res
+})
+multi <- rbindlist(multi)
 # Remove genus with a small baseMean to avoid a bimodal pval distribution
 multi <- rbind(multi, tests)[baseMean >= min_abundance]
 multi[, padj := p.adjust(pvalue, method="fdr")]
