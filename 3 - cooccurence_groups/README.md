@@ -19,3 +19,5 @@ The description each file is as follows:
 4. A tab-delimited table of correlation values between different genera.
 5. A tab-delimited table of 2-sided *p*-values based on random data label shuffling (1000 permutations) for the genera correlations.
 6. A tab-delimited table of covariance values between different genera. Not as informative or trustworthy as correlations.
+
+For the same files for single variants, I will share these files via dropbox, since github is flagging their size.
