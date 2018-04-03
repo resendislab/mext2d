@@ -15,5 +15,7 @@ get_permuted_r2 <- function(counts, meta) {
 }
 
 counts <- as.matrix(taxa_count(ps))
+meta <- meta[rownames(counts), ]
+D <- vegan::vegdist(counts, method="bray")
 perms <- mclapply(1:100, function(i) get_permuted_r2(counts, meta))
 
