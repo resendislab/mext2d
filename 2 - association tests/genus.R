@@ -4,19 +4,18 @@
 
 # Scripts for running association tests on the genus level
 
-devtools::load_all("../../microbiome/mbtools")
-library(magrittr)
-library(DESeq2)
+library(mbtools)
 
 ps <- readRDS("../data/taxonomy_clean.rds")
 ps <- subset_samples(ps, diabetes_status < 6 && metformin == 0)
 variables <- names(sample_data(ps))
 exclude <- grepl("_6months", variables) | grepl("_12months", variables) |
-           variables == "id"
+           variables %in% c("id", "treatment_group")
 
-tests <- association(ps, variables = variables[!exclude], confounders = c("gender"))
+tests <- association(ps, variables = variables[!exclude],
+                     confounders = c("gender"))
 fwrite(tests[order(padj, variable)], "../data/tests_genus.csv")
 
 # Get post-hoc tests for status
 sample_data(ps)$status <- factor(sample_data(ps)$status)
-multi <- combinatorial_association(ps, "status")
+multi <- combinatorial_association(ps, "diabetes_status")
