@@ -9,10 +9,10 @@ library(magrittr)
 library(DESeq2)
 
 ps <- readRDS("../data/taxonomy_clean.rds")
-ps <- subset_samples(ps, diabetes_status < 6 && metformin == 0)
+ps <- subset_samples(ps, diabetes_status < 6 & metformin == 0)
 variables <- names(sample_data(ps))
 exclude <- grepl("_6months", variables) | grepl("_12months", variables) |
-           variables == "id" | variables == "target_group"
+           variables %in% c("id", "treatment_group", "metformin")
 
 vars <- c("diabetes_status", "glucose_0", "glucose_120", "auc_glucose",
           "glycated_haemoglobin", "insulin_0", "auc_insulin")

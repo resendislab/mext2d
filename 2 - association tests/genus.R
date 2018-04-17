@@ -7,10 +7,10 @@
 library(mbtools)
 
 ps <- readRDS("../data/taxonomy_clean.rds")
-ps <- subset_samples(ps, diabetes_status < 6 && metformin == 0)
+ps <- subset_samples(ps, diabetes_status < 6 & metformin == 0)
 variables <- names(sample_data(ps))
 exclude <- grepl("_6months", variables) | grepl("_12months", variables) |
-           variables %in% c("id", "treatment_group")
+           variables %in% c("id", "treatment_group", "metformin")
 
 tests <- association(ps, variables = variables[!exclude],
                      confounders = c("gender"))
