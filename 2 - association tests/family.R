@@ -14,7 +14,7 @@ exclude <- grepl("_6months", variables) | grepl("_12months", variables) |
 
 tests <- association(ps, variables = variables[!exclude], tax = "family",
                      confounders = c("gender"))
-fwrite(tests[order(padj, variable)], "../data/tests_genus.csv")
+fwrite(tests[order(padj, variable)], "../data/tests_family.csv")
 
 # Get post-hoc tests for status
 sample_data(ps)$status <- factor(sample_data(ps)$status)

@@ -1,0 +1,67 @@
+---
+title: "Confounder and richness analysis"
+author: "Christian Diener <mail (a) cdiener.com>"
+output: 
+  html_notebook: default
+---
+
+## Confounding
+
+```{r}
+library(mbtools)
+
+original <- fread("../data/tests_genus.csv")
+original$strategy <- "general"
+original$response <- "single"
+filtered <- fread("../data/tests_confounders.csv")
+filtered$strategy <- "isolated"
+
+vars <- c("diabetes_status", "auc_glucose", "num_risk_factors", "bmi", "percent_body_fat", "systolic_pressure", "diastolic_pressure")
+genera <- c("Escherichia/Shigella", "Veillonella", "Anaerostipes", "Blautia")
+tests <- rbind(original[variable %in% vars], filtered[variable %in% vars])
+tests <- tests[genus %in% genera]
+tests[, variable := factor(variable, levels=vars)]
+```
+
+
+Development of lfcs:
+
+```{r, fig.width=8, fig.height=4}
+library(ggplot2)
+theme_set(theme_bw())
+
+pl <- ggplot(tests, aes(x=strategy, y=log2FoldChange, col=genus, group=genus)) +
+  geom_hline(yintercept=0, lty="dashed") +
+  geom_linerange(aes(ymin=log2FoldChange - lfcSE, ymax=log2FoldChange + lfcSE)) +
+  geom_point() + geom_line(alpha=0.5) + facet_wrap(~ variable, nrow=2) + 
+  labs(x="", y="log2 fold change", color="")
+ggsave("confounding.svg", width=8, height=4)
+pl
+```
+
+## Richness
+
+Just to see that association with richness does not depend on overall abundance.
+
+```{r}
+pl <- ggplot(original[variable == "richness"], aes(x=baseMean, y=log2FoldChange, col=(padj > 0.05) | is.na(padj))) +
+  geom_hline(yintercept=0, lty="dashed") + geom_point() + scale_x_log10(breaks=c(10, 100, 1000, 10000)) + 
+  labs(x="abundance [norm. reads]", y="log2 fold change") +
+  guides(color=F)
+ggsave("abundance_vs_richness_lfc.svg", width=5, height=5)
+pl
+```
+
+```{r, fig.width=6, fig.height=5}
+rich <- original[padj < 0.05 & variable == "richness"][order(log2FoldChange)]
+rich[, genus := factor(genus, levels=unique(genus))]
+pl <- ggplot(rich, aes(y=genus, x=log2FoldChange)) +
+  geom_vline(xintercept=0, lty="dashed") +
+  geom_errorbarh(aes(xmin=log2FoldChange - lfcSE, xmax=log2FoldChange + lfcSE), height=0.2) +
+  geom_point(aes(col=baseMean), size=2) + 
+  scale_fill_gradient(name="abundance", trans="log") + 
+  labs(x="log2 fold change", y="", color="abundance")
+ggsave("richness_genera.svg", width=6, height=5)
+pl
+```
+

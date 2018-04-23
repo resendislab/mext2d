@@ -14,25 +14,23 @@ variables <- names(sample_data(ps))
 exclude <- grepl("_6months", variables) | grepl("_12months", variables) |
            variables %in% c("id", "treatment_group", "metformin")
 
-vars <- c("diabetes_status", "glucose_0", "glucose_120", "auc_glucose",
-          "glycated_haemoglobin", "insulin_0", "auc_insulin")
-confounders <- c("gender", "bmi", "waist_hip_ratio", "percent_body_fat",
-                 "visceral_fat")
-diabetes_no_obesity <- association(ps, variables = vars,
-                                   confounders = confounders)
+diabetes <- c("diabetes_status", "auc_glucose", "glycated_haemoglobin",
+              "auc_insulin", "num_risk_factors")
+obesity <- c("bmi", "waist_hip_ratio", "visceral_fat", "percent_body_fat")
+cardio <- c("systolic_pressure", "diastolic_pressure", "cholesterol")
 
-vars <- c("gender", "bmi", "waist_hip_ratio", "percent_body_fat",
-          "visceral_fat", "bmi_status")
-confounders <- c("gender", "diabetes_status", "glucose_0", "glucose_120",
-                 "auc_glucose", "glycated_haemoglobin", "insulin_0",
-                 "auc_insulin")
-obesity_no_diabetes <- association(ps, variables = vars,
-                                   confounders = confounders)
+tests <- list()
+tests$diabetes <- association(ps, variables = diabetes,
+                              confounders = c("gender", obesity, cardio))
+tests$diabetes[, "response" := "diabetes"]
 
-vars <- c("systolic_pressure", "diastolic_pressure", "mean_blood_pressure",
-          "pulse_pressure", "cholesterol")
-confounders <- c("gender", "diabetes_status", "glucose_0", "glucose_120",
-                 "auc_glucose", "glycated_haemoglobin", "insulin_0",
-                 "auc_insulin")
-cardio_no_diabetes <- association(ps, variables = vars,
-                                  confounders = confounders)
+tests$obesity <- association(ps, variables = obesity,
+                             confounders = c("gender", diabetes, cardio))
+tests$obesity[, "response" := "obesity"]
+
+tests$cardio <- association(ps, variables = cardio,
+                            confounders = c("gender", diabetes, obesity))
+tests$cardio[, "response" := "cardio"]
+
+tests <- rbindlist(tests)
+fwrite(tests, "../data/tests_confounders.csv")

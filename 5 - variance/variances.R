@@ -6,5 +6,5 @@ options(mc.cores = 6)
 counts <- as.matrix(taxa_count(ps))
 meta <- meta[rownames(counts), ]
 D <- vegan::vegdist(counts, method="bray")
-perms <- vegan::adonis(D ~ ., data=meta, perms=1000, parallel=True)
+perms <- vegan::adonis(D ~ ., data=meta, perms=10000, parallel=T)
 
