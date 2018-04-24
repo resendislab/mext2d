@@ -15,38 +15,142 @@ library(mbtools)
 library(ggplot2)
 
 theme_set(theme_bw())
-status_map <- c("normal", "IFG", "IGT", "IFG+ITG", "T2D", "T2D treated")
+status_map <- c("healthy", "IFG", "IGT", "IFG+ITG", "T2D", "T2D treated")
 
 ps <- readRDS("../data/taxonomy_clean.rds")
 sdata <- sample_data(ps)
 sdata$diabetes_status <- factor(status_map[sdata$diabetes_status], levels=status_map)
 sample_data(ps) <- sdata
+
+# treatment naive samples
 naive <- subset_samples(ps, as.numeric(diabetes_status) < 6 & metformin == 0)
 ```
 
 
+## Metformin related changes
+
+Checking for the changes reported earlier.
+
+```{r}
+data <- plot_counts(ps, "metformin", "genus", c("Escherichia/Shigella", "Intestinibacter"), 
+                    normalized=T, only_data=T)
+ggplot(data, aes(x=c("metformin-", "metformin+")[as.numeric(value)], y=reads + 0.5, color=value)) + 
+  geom_boxplot() + geom_jitter(width=0.2, alpha=0.5) + guides(color=F) +
+  facet_wrap(~ taxa) + scale_y_log10() + labs(x="", y="normalized reads")
+ggsave("metformin.svg", width=6, height=4)
+```
+
+As you can see only very few samples with metformin treatment. The respective tests.
+
+For Intestinibacter:
+
+```{r}
+wilcox.test(reads ~ value, data[taxa == "Intestinibacter"])
+```
+
+For E. coli:
+
+```{r}
+wilcox.test(reads ~ value, data[taxa == "Escherichia/Shigella"])
+```
+
+## Treatment-related changes
+
+```{r}
+t2d <- subset_samples(ps, as.numeric(diabetes_status) >= 5)
+
+genera <- c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Veillonella", "Romboutsia", "Intestinibacter")
+data <- plot_counts(t2d, "diabetes_status", "genus", genera, only_data=T) 
+ggplot(data, aes(x=value, y=reads + 0.5, color=value)) + geom_boxplot() + guides(color=F) +
+  geom_jitter(width=0.25, alpha=0.5) + scale_y_log10() + facet_wrap(~ taxa) + 
+  labs(x="", y="normalized reads")
+ggsave("treated_untreated.svg", width=6, height=4)
+```
+
+Corresponding tests:
+
+```{r}
+data[, .(pval = wilcox.test(reads ~ value)$p.value), by=taxa]
+```
+
 ## Good cop - bad cop
 
-with diabetes status:
+```{r}
+tests <- fread("../data/tests_genus.csv")
+```
+
+### Diabetes group/status
 
 ```{r, fig.width=6, fig.height=6}
-pl <- plot_counts(naive, "diabetes_status", "genus", c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Romboutsia"), normalized = T)
-pl + geom_jitter(width=0.2, alpha=0.25) + geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
+genera <- c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Veillonella")
+plot_counts(naive, "diabetes_status", "genus", genera, normalized = T) +
+  geom_jitter(width=0.2, alpha=0.25) + geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
   labs(x="", y="normalized reads")
+ggsave("diabetes_status.svg", width=6, height=6)
 ```
 
-with #risk factors:
+Corresponding tests:
 
-```{r, fig.width=8, fig.height=8}
-pl <- plot_counts(naive, "num_risk_factors", "genus", c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Romboutsia"), normalized = T)
-pl + geom_jitter(width=0.2, alpha=0.25) + geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
-  labs(x="no. of risk factors", y="normalized reads")
+```{r}
+tests[variable == "diabetes_status" & genus %in% genera]
 ```
+
+
+### number of risk factors:
 
 ```{r, fig.width=6, fig.height=6}
-pl <- plot_counts(naive, "auc_glucose", "genus", c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Romboutsia"), normalized = T)
-pl + geom_smooth(method="glm") +
-  labs(x="area under glucose curve", y="normalized reads") + scale_x_log10(breaks=c(2000, 5000, 10000, 20000, 50000))
+plot_counts(naive, "num_risk_factors", "genus", genera) +
+  geom_jitter(width=0.2, alpha=0.25, size=0.5) + geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
+  labs(x="no. of risk factors", y="normalized reads")
+ggsave("num_risk_factors.svg", width=8, height=8)
 ```
 
+
+Corresponding tests:
+
+```{r}
+tests[variable == "num_risk_factors" & genus %in% genera]
+```
+
+### Area under glucose curve
+
+```{r, fig.width=6, fig.height=6}
+plot_counts(naive, "auc_glucose", "genus", genera) + geom_smooth(method="glm") +
+  labs(x="area under glucose curve", y="normalized reads") + scale_x_log10(breaks=c(2000, 5000, 10000, 20000, 50000))
+ggsave("auc_glucose.svg", width=6, height=6)
+```
+
+Corresponding tests:
+
+```{r}
+tests[variable == "auc_glucose" & genus %in% genera]
+```
+
+## General test stats
+
+Significant tests from total tests:
+
+```{r}
+paste(nrow(tests[padj < 0.05]), "/", nrow(tests))
+```
+
+Genera with most significant tests:
+
+```{r}
+by_genus <- tests[, .(nsig=sum(padj < 0.05, na.rm=T)), by="genus"]
+by_genus[order(-nsig)][1:10]
+```
+
+Significant tests by variable group:
+
+```{r}
+annotation <- readxl::read_excel("../data/clinical_new.xlsx",
+                                 sheet = "annotations_clean")
+annotated_tests <- merge(tests, annotation, by.x="variable", by.y="name")
+by_group <- annotated_tests[, .(nsig=sum(padj < 0.05, na.rm=T),
+                                ntests=length(padj),
+                                nvars=uniqueN(variable)), 
+                            by="group"][, "percent" := nsig/ntests]
+by_group[order(-nsig)]
+```
 

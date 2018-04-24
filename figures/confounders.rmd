@@ -5,26 +5,30 @@ output:
   html_notebook: default
 ---
 
-## Confounding
+## Additional analyses
 
 ```{r}
 library(mbtools)
 
 original <- fread("../data/tests_genus.csv")
-original$strategy <- "general"
+original$strategy <- "without"
 original$response <- "single"
 filtered <- fread("../data/tests_confounders.csv")
-filtered$strategy <- "isolated"
+filtered$strategy <- "with"
 
 vars <- c("diabetes_status", "auc_glucose", "num_risk_factors", "bmi", "percent_body_fat", "systolic_pressure", "diastolic_pressure")
 genera <- c("Escherichia/Shigella", "Veillonella", "Anaerostipes", "Blautia")
 tests <- rbind(original[variable %in% vars], filtered[variable %in% vars])
 tests <- tests[genus %in% genera]
 tests[, variable := factor(variable, levels=vars)]
+tests[, strategy := factor(strategy, levels=c("without", "with"))]
 ```
 
+### Confounding of associations:
 
-Development of lfcs:
+Shown are the log2 fold changes when only considering the clinical variable without additional confounders (only gender as always used) and when using
+additional confounding variables for the other groups. Basically if you see a horizontal line it would indicate no confounding effect. If the line drops or 
+raises towards zero it indicates that the association is confounded. Error bars denotes the standard error of the log2 fold change (regression coefficient).
 
 ```{r, fig.width=8, fig.height=4}
 library(ggplot2)
@@ -34,14 +38,18 @@ pl <- ggplot(tests, aes(x=strategy, y=log2FoldChange, col=genus, group=genus)) +
   geom_hline(yintercept=0, lty="dashed") +
   geom_linerange(aes(ymin=log2FoldChange - lfcSE, ymax=log2FoldChange + lfcSE)) +
   geom_point() + geom_line(alpha=0.5) + facet_wrap(~ variable, nrow=2) + 
-  labs(x="", y="log2 fold change", color="")
+  labs(x="confounding", y="log2 fold change", color="")
 ggsave("confounding.svg", width=8, height=4)
 pl
 ```
 
+Seems that most associations are actually due to the disease state.
+
 ## Richness
 
-Just to see that association with richness does not depend on overall abundance.
+Richness was calculated using the Chao1 index.
+
+Just to see that association with richness does not depend on overall abundance...
 
 ```{r}
 pl <- ggplot(original[variable == "richness"], aes(x=baseMean, y=log2FoldChange, col=(padj > 0.05) | is.na(padj))) +
@@ -51,6 +59,8 @@ pl <- ggplot(original[variable == "richness"], aes(x=baseMean, y=log2FoldChange,
 ggsave("abundance_vs_richness_lfc.svg", width=5, height=5)
 pl
 ```
+
+Genera which are associated significantly with richness. Error bars denotes the standard error of the log2 fold change (regression coefficient).
 
 ```{r, fig.width=6, fig.height=5}
 rich <- original[padj < 0.05 & variable == "richness"][order(log2FoldChange)]
@@ -65,3 +75,5 @@ ggsave("richness_genera.svg", width=6, height=5)
 pl
 ```
 
+We find Escherichia and Veillonella but not Anaerostipes and Blautia. So whatever the causality between Anaerostipes/Blautia and Diabetes is it is not
+simply a restoration of diversity.
