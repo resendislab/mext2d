@@ -39,7 +39,7 @@ BMI vs diabetes_status:
 pl <- ggplot(meta, aes(x=diabetes_status, y=bmi, col=diabetes_status)) + geom_jitter(width=0.3) + 
   geom_smooth(method="glm", aes(group=0, x=as.numeric(diabetes_status))) +
   guides(color=FALSE) + labs(x="", y="BMI")
-ggsave("status_vs_bmi.svg")
+ggsave("status_vs_bmi.svg", width=6, height=4)
 pl
 ```
 
@@ -49,7 +49,7 @@ BMI vs. glucose AUC:
 pl <- ggplot(meta, aes(x=bmi, y=auc_glucose, col=diabetes_status)) + geom_point() + 
   geom_smooth(method="glm", aes(group=0)) + scale_y_log10(breaks=c(5000, 10000, 20000, 50000)) +
   guides(color=FALSE) + labs(x="BMI", y="area under glucose curve")
-ggsave("auc_vs_bmi.svg")
+ggsave("auc_vs_bmi.svg", width=6, height=4)
 pl
 ```
 
@@ -88,7 +88,7 @@ glc[, time := as.numeric(tstrsplit(time, "_")[[2]])]
 pl <- ggplot(glc, aes(x=time, y=glucose, col=diabetes_status, group=id)) +
       geom_line(alpha=0.25, lwd=1) + guides(colour = guide_legend(override.aes = list(alpha = 1))) +
       labs(color="", x="time [min]", y="blood glucose [mg/dL]") + scale_color_hue(direction=-1)
-ggsave("glucose_curves.svg", pl)
+ggsave("glucose_curves.svg", width=6, height=4)
 pl
 ```
 
@@ -102,7 +102,7 @@ ins[, time := as.numeric(tstrsplit(time, "_")[[2]])]
 pl <- ggplot(ins, aes(x=time, y=insulin, col=beta_cell_function, group=id)) +
       geom_line(alpha=0.5, lwd=0.5) +
       labs(color="", x="time [min]", y="insulin [mg/dL]") + viridis::scale_color_viridis()
-ggsave("insuline_curves.svg")
+ggsave("insuline_curves.svg", width=6, height=4)
 pl
 
 ```
@@ -117,7 +117,7 @@ rownames(sdata) <- sample_names(ps)
 sample_data(ps) <- sdata
 ord <- ordinate(ps, method="PCoA")
 plot_ordination(ps, ord, color="diabetes_status", shape = "metformin")
-ggsave("ordination.svg")
+ggsave("ordination.svg", width=6, height=4)
 ```
 
 Family distribution:
