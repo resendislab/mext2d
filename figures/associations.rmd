@@ -1,0 +1,52 @@
+---
+title: "Association figures"
+author: "Christian Diener"
+output:
+    html_notebook: default
+    html_document:
+        toc: true
+        toc_float: true
+---
+
+# Microbiome phenotype associations
+
+```{r}
+library(mbtools)
+library(ggplot2)
+
+theme_set(theme_bw())
+status_map <- c("normal", "IFG", "IGT", "IFG+ITG", "T2D", "T2D treated")
+
+ps <- readRDS("../data/taxonomy_clean.rds")
+sdata <- sample_data(ps)
+sdata$diabetes_status <- factor(status_map[sdata$diabetes_status], levels=status_map)
+sample_data(ps) <- sdata
+```
+
+
+## Good cop - bad cop
+
+with diabetes status:
+
+```{r, fig.width=8, fig.height=8}
+pl <- plot_counts(naive, "diabetes_status", "genus", c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Romboutsia"), normalized = T)
+pl + geom_jitter(width=0.2, alpha=0.5) + geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
+  labs(x="", y="normalized reads")
+```
+
+with #risk factors:
+
+```{r, fig.width=10, fig.height=10}
+naive <- subset_samples(ps, as.numeric(diabetes_status) < 6 & metformin == 0)
+pl <- plot_counts(naive, "num_risk_factors", "genus", c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Romboutsia"), normalized = T)
+pl + geom_jitter(width=0.2, alpha=0.5) + geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
+  labs(x="no. of risk factors", y="normalized reads")
+```
+
+```{r, fig.width=7, fig.height=7}
+pl <- plot_counts(naive, "auc_glucose", "genus", c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Romboutsia"), normalized = T)
+pl + geom_smooth(method="glm") +
+  labs(x="area under glucose curve", y="normalized reads") + scale_x_log10(breaks=c(2000, 5000, 10000, 20000, 50000))
+```
+
+
