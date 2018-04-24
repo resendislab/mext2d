@@ -16,6 +16,8 @@ sample_names(ps) <- s[include]
 meta <- meta[meta$id %in% s[include], ]
 rownames(meta) <- meta$id
 sample_data(ps) <- meta[s[include], ]
+richness <- estimate_richness(ps)
+sample_data(ps)$richness <- richness$Chao1
 saveRDS(ps, "../data/taxonomy_clean.rds")
 
 # Save the same info in csv files as well
@@ -32,11 +34,11 @@ ps <- subset_samples(ps, diabetes_status < 6 & metformin == 0)
 genera <- as.matrix(taxa_count(ps, "genus"))
 genera <- genera[, colMeans(genera) > 10]
 fraction <- apply(genera, 2, function(x) sum(x > 0) / length(x))
-genera <- normalize(genera[, fraction > 0.1])
+genera <- mbtools::normalize(genera[, fraction > 0.1])
 write.csv(genera, "../data/counts_norm_genus.csv")
 
 variants <- as(otu_table(ps), "matrix")
 variants <- variants[, colMeans(variants) > 10]
 fraction <- apply(variants, 2, function(x) sum(x > 0) / length(x))
-variants <- normalize(variants[, fraction > 0.1])
+variants <- mbtools::normalize(variants[, fraction > 0.1])
 write.csv(variants, "../data/counts_norm_variant.csv")

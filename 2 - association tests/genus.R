@@ -17,5 +17,5 @@ tests <- association(ps, variables = variables[!exclude],
 fwrite(tests[order(padj, variable)], "../data/tests_genus.csv")
 
 # Get post-hoc tests for status
-sample_data(ps)$status <- factor(sample_data(ps)$status)
+sample_data(ps)$diabetes_status <- factor(sample_data(ps)$diabetes_status)
 multi <- combinatorial_association(ps, "diabetes_status")
