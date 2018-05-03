@@ -2,13 +2,7 @@
 title: "Batch effects"
 auuthor: "Christian Diener <mail@cdiener.com>"
 output:
-  html_document:
-    toc: true
-    toc_float:
-      collapsed: false
-  pdf_document:
-    latex_engine: lualatex
-    highlight: tango
+  html_notebook: default
 ---
 
 ## Looking for batch effects

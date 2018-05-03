@@ -19,6 +19,7 @@ status_map <- c("healthy", "IFG", "IGT", "IFG+ITG", "T2D", "T2D treated")
 
 ps <- readRDS("../data/taxonomy_clean.rds")
 meta <- as.data.table(as(sample_data(ps), "data.frame"))
+meta <- meta[, !grepl("months", names(meta)), with=FALSE]
 meta[, diabetes_status := factor(status_map[diabetes_status], levels=status_map)]
 ```
 
@@ -32,11 +33,31 @@ corrs <- cor(meta[, sapply(meta, is.numeric), with=F], method="spearman", use="p
 
 colors <- colorRampPalette(rev(RColorBrewer::brewer.pal(n = 7, name = "RdBu")))(128)
 pheatmap(corrs, col=colors, border_color=NA, filename="cors.png", fontsize=3,
-         width=10, height=10)
+         width=8, height=8)
 knitr::include_graphics("cors.png")
 ```
 
 ### Relationship between diabetes and obesity
+
+Number of phenotype variables used:
+
+```{r}
+ncol(meta) - 1  # have to subtract the ID column
+```
+
+
+Distribution of groups:
+
+```{r}
+table(meta$diabetes_status)
+```
+
+Previous metformin treatment/consumption:
+
+```{r}
+table(meta$metformin, meta$diabetes_status)
+```
+
 
 BMI raises slightly with group. Treated patients seem to have lost weight again.
 
@@ -115,6 +136,26 @@ pl
 ```
 
 ## Microbiome data
+
+Number of unique sequence variants:
+
+```{r}
+nrow(tax_table(ps))
+```
+
+per sample:
+
+```{r}
+present <- apply(otu_table(ps), 1, function(x) sum(x > 0))
+print(mean(present), sd(present))
+```
+
+Genera:
+
+```{r}
+uniqueN(tax_table(ps)[, "Genus"])
+```
+
 
 Ordination plot shows pretty mixed signal. The same for DCA or t-SNE.
 
