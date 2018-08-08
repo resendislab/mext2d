@@ -60,7 +60,7 @@ ggsave("abundance_vs_richness_lfc.svg", width=5, height=5)
 pl
 ```
 
-Genera which are associated significantly with richness. Error bars denotes the standard error of the log2 fold change (regression coefficient).
+Genera which are associated significantly with richness (Shannon index). Error bars denotes the standard error of the log2 fold change (regression coefficient).
 
 ```{r, fig.width=6, fig.height=5}
 rich <- original[padj < 0.05 & variable == "richness"][order(log2FoldChange)]

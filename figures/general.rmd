@@ -37,6 +37,21 @@ pheatmap(corrs, col=colors, border_color=NA, filename="cors.png", fontsize=3,
 knitr::include_graphics("cors.png")
 ```
 
+```{r}
+rich_corrs <- sort(corrs["richness", ])
+data <- meta[, sapply(meta, is.numeric), with=F]
+
+pearson_stats <- function(x) {
+  test <- cor.test(data$richness, x, method="spearman", exact=F, continuity=T)
+  return(c(test$estimate, pval=test$p.value))
+}
+
+pearson <- as.data.frame(t(apply(data, 2, pearson_stats)))
+pearson$fdr <- p.adjust(pearson$pval, method="fdr")
+pearson[order(pearson$pval), ]
+```
+
+
 ### Relationship between diabetes and obesity
 
 Number of phenotype variables used:
@@ -83,7 +98,6 @@ Visceral fat also associates with the area under the glucose curve. The same for
 
 ```{r}
 pl <- ggplot(meta, aes(x=visceral_fat, y=auc_glucose, col=diabetes_status)) + geom_point(alpha=0.5) + 
-  geom_smooth(method="glm", aes(group=0)) + scale_y_log10(breaks=c(5000, 10000, 20000, 50000)) +
   labs(x="visceral fat [%]", y="area under glucose curve", color="group")
 ggsave("fat_vs_auc.svg", width=6, height=4)
 pl
@@ -147,7 +161,7 @@ per sample:
 
 ```{r}
 present <- apply(otu_table(ps), 1, function(x) sum(x > 0))
-print(mean(present), sd(present))
+print(c(mean(present), sd(present)))
 ```
 
 Genera:
