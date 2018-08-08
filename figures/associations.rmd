@@ -34,6 +34,7 @@ Checking for the changes reported earlier.
 ```{r}
 data <- plot_counts(ps, "metformin", "genus", c("Escherichia/Shigella", "Intestinibacter"), 
                     normalized=T, only_data=T)
+
 ggplot(data, aes(x=c("metformin-", "metformin+")[as.numeric(value)], y=reads + 0.5, color=value)) + 
   geom_boxplot() + geom_jitter(width=0.2, alpha=0.5) + guides(color=F) +
   facet_wrap(~ taxa) + scale_y_log10() + labs(x="", y="normalized reads")
@@ -57,7 +58,7 @@ wilcox.test(reads ~ value, data[taxa == "Escherichia/Shigella"])
 ## Treatment-related changes
 
 ```{r}
-t2d <- subset_samples(ps, as.numeric(diabetes_status) >= 5)
+t2d <- subset_samples(ps, as.numeric(diabetes_status) %in% c(1, 5, 6))
 
 genera <- c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Veillonella", "Romboutsia", "Intestinibacter")
 data <- plot_counts(t2d, "diabetes_status", "genus", genera, only_data=T) 
@@ -70,7 +71,7 @@ ggsave("treated_untreated.svg", width=6, height=4)
 Corresponding tests:
 
 ```{r}
-data[, .(pval = wilcox.test(reads ~ value)$p.value), by=taxa]
+data[, .(pval = kruskal.test(reads ~ value)$p.value), by=taxa]
 ```
 
 ## Good cop - bad cop
@@ -84,7 +85,7 @@ tests <- fread("../data/tests_genus.csv")
 ```{r, fig.width=6, fig.height=6}
 genera <- c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Veillonella")
 plot_counts(naive, "diabetes_status", "genus", genera, normalized = T) +
-  geom_jitter(width=0.2, alpha=0.25) + geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
+  geom_jitter(width=0.2, alpha=0.25, size=1) + geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
   labs(x="", y="normalized reads")
 ggsave("diabetes_status.svg", width=6, height=6)
 ```
@@ -97,10 +98,19 @@ tests[variable == "diabetes_status" & genus %in% genera]
 
 ### insulin
 
+
+```{r}
+sdata <- sample_data(naive)
+ggplot(sdata, aes(x=diabetes_status, y=beta_cell_disposition_index)) + geom_boxplot() + geom_jitter(width=0.25, alpha=0.25)
+sdata$beta_cells_affected <- as.integer(sdata$beta_cell_disposition_index < 1)
+
+sample_data(naive) <- sdata
+```
+
 ```{r, fig.width=6, fig.height=6}
 genera <- c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Veillonella")
-plot_counts(naive, "beta_cell_disposition_index", "genus", genera, normalized = T) +
-  geom_jitter(width=0.2, alpha=0.25) + geom_smooth(method="glm") +
+plot_counts(naive, "beta_cells_affected", "genus", genera, normalized = T) +
+  geom_jitter(width=0.2, alpha=0.25) +
   labs(x="", y="normalized reads")
 ggsave("beta_cell_disposition_index.svg", width=6, height=6)
 ```

@@ -17,7 +17,7 @@ meta <- meta[meta$id %in% s[include], ]
 rownames(meta) <- meta$id
 sample_data(ps) <- meta[s[include], ]
 richness <- estimate_richness(ps)
-sample_data(ps)$richness <- richness$Chao1
+sample_data(ps)$richness <- richness$Shannon
 saveRDS(ps, "../data/taxonomy_clean.rds")
 
 # Save the same info in csv files as well
