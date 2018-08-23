@@ -23,6 +23,16 @@ meta <- meta[, !grepl("months", names(meta)), with=FALSE]
 meta[, diabetes_status := factor(status_map[diabetes_status], levels=status_map)]
 ```
 
+### Population design
+
+```{r, fig.width=5, fig.height=2}
+counts <- meta[order(diabetes_status), .N, by=diabetes_status]
+ggplot(counts, aes(x=diabetes_status, y=N, fill=diabetes_status)) + geom_bar(stat="identity") + guides(fill=F) +
+  labs(x="", y="n")
+ggsave("population.svg", width=5, height=2)
+```
+
+
 ### Correlations between clinical variables
 
 Block on upper left is insulin and glucose, small block in the center is obesity, large block in lower left is diet.

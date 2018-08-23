@@ -57,21 +57,23 @@ wilcox.test(reads ~ value, data[taxa == "Escherichia/Shigella"])
 
 ## Treatment-related changes
 
-```{r}
+```{r, fig.width=3.5, fig.height=5.5}
 t2d <- subset_samples(ps, as.numeric(diabetes_status) %in% c(1, 5, 6))
 
 genera <- c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Veillonella", "Romboutsia", "Intestinibacter")
 data <- plot_counts(t2d, "diabetes_status", "genus", genera, only_data=T) 
-ggplot(data, aes(x=value, y=reads + 0.5, color=value)) + geom_boxplot() + guides(color=F) +
-  geom_jitter(width=0.25, alpha=0.5) + scale_y_log10() + facet_wrap(~ taxa) + 
-  labs(x="", y="normalized reads")
-ggsave("treated_untreated.svg", width=6, height=4)
+ggplot(data, aes(x=value, y=reads + 0.5, color=value)) + geom_boxplot(outlier.colour=NA) + guides(color=F) +
+  geom_jitter(width=0.25, alpha=0.5, size=0.5) + scale_y_log10() + facet_wrap(~ taxa, ncol=2) + 
+  labs(x="", y="normalized reads") + theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust=1))
+ggsave("treated_untreated.svg", width=3.5, height=5.5)
 ```
 
 Corresponding tests:
 
 ```{r}
-data[, .(pval = kruskal.test(reads ~ value)$p.value), by=taxa]
+tests = data[, .(healthy_vs_T2D = wilcox.test(reads[value == "healthy"],  reads[value == "T2D"])$p.value,
+                 healthy_vs_treated = wilcox.test(reads[value == "healthy"],  reads[value == "T2D treated"])$p.value), by=taxa]
+tests
 ```
 
 ## Good cop - bad cop
@@ -99,19 +101,23 @@ tests[variable == "diabetes_status" & genus %in% genera]
 ### insulin
 
 
-```{r}
+```{r, fig.width=6, fig.height=4}
 sdata <- sample_data(naive)
-ggplot(sdata, aes(x=diabetes_status, y=beta_cell_disposition_index)) + geom_boxplot() + geom_jitter(width=0.25, alpha=0.25)
-sdata$beta_cells_affected <- as.integer(sdata$beta_cell_disposition_index < 1)
+ggplot(sdata, aes(x=diabetes_status, y=beta_cell_disposition_index, color=diabetes_status)) + 
+  geom_hline(yintercept=2, lty="dashed") + geom_boxplot() + geom_jitter(width=0.25, alpha=0.25) +
+  labs(x="", y="beta cell disposition")
+sdata$beta_cells_affected <- c("normal", "affected")[(sdata$beta_cell_disposition_index < 2) + 1]
+ggsave("beta_cell_disposition.svg", width=6, height=6)
 
 sample_data(naive) <- sdata
 ```
 
 ```{r, fig.width=6, fig.height=6}
 genera <- c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Veillonella")
-plot_counts(naive, "beta_cells_affected", "genus", genera, normalized = T) +
-  geom_jitter(width=0.2, alpha=0.25) +
-  labs(x="", y="normalized reads")
+data <- plot_counts(naive, "beta_cells_affected", "genus", genera, normalized = T, only_data=T)
+ggplot(data[!is.na(value)], aes(x=value, y=reads, color=value)) + geom_boxplot() +
+  geom_jitter(width=0.2, alpha=0.25) + facet_wrap(~ taxa) + scale_y_log10() +
+  labs(x="", y="normalized reads") + guides(color=F)
 ggsave("beta_cell_disposition_index.svg", width=6, height=6)
 ```
 
@@ -121,13 +127,18 @@ Corresponding tests:
 tests[variable == "beta_cell_disposition_index" & genus %in% genera]
 ```
 
+```{r}
+data[, .(pval = wilcox.test(reads ~ value)$p.value), by=taxa]
+```
+
+
 ### number of risk factors:
 
 ```{r, fig.width=6, fig.height=6}
 plot_counts(naive, "num_risk_factors", "genus", genera) +
   geom_jitter(width=0.2, alpha=0.25, size=0.5) + geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
   labs(x="no. of risk factors", y="normalized reads")
-ggsave("num_risk_factors.svg", width=8, height=8)
+ggsave("num_risk_factors.svg", width=6, height=6)
 ```
 
 
@@ -177,5 +188,20 @@ by_group <- annotated_tests[, .(nsig=sum(padj < 0.05, na.rm=T),
                                 nvars=uniqueN(variable)), 
                             by="group"][, "percent" := nsig/ntests]
 by_group[order(-nsig)]
+```
+
+```{r}
+by_genus <- annotated_tests[, .(nsig=sum(padj < 0.05, na.rm=T),
+                                ntests=length(padj),
+                                nvars=uniqueN(variable)), 
+                            by="genus"][, "percent" := nsig/ntests]
+by_genus[order(-nsig)]
+```
+
+```{r, fig.width=4, fig.height=3}
+ggplot(by_group, aes(x=nsig, y=percent, color=group)) + geom_point(size=2) +
+  geom_text(aes(label=group), hjust=0, nudge_x=2) + xlim(0, 78) +
+  labs(x="significant associations", y="positive test rate") + guides(color=F)
+ggsave("sig_plot.svg", width=4, height=3)
 ```
 
