@@ -14,22 +14,24 @@ output:
 library(mbtools)
 library(ggplot2)
 
-theme_set(theme_bw())
-status_map <- c("healthy", "IFG", "IGT", "IFG+ITG", "T2D", "T2D treated")
+theme_set(theme_classic())
+status_map <- c("NG", "IFG", "IGT", "IFG+ITG", "T2D", "T2D treated")
 
 ps <- readRDS("../data/taxonomy_clean.rds")
 meta <- as.data.table(as(sample_data(ps), "data.frame"))
-meta <- meta[, !grepl("months", names(meta)), with=FALSE]
-meta[, diabetes_status := factor(status_map[diabetes_status], levels=status_map)]
+meta <- meta[, !grepl("months", names(meta)), with = FALSE]
+meta[, diabetes_status := factor(status_map[diabetes_status], 
+                                 levels = status_map)]
 ```
 
 ### Population design
 
 ```{r, fig.width=5, fig.height=2}
-counts <- meta[order(diabetes_status), .N, by=diabetes_status]
-ggplot(counts, aes(x=diabetes_status, y=N, fill=diabetes_status)) + geom_bar(stat="identity") + guides(fill=F) +
-  labs(x="", y="n")
-ggsave("population.svg", width=5, height=2)
+counts <- meta[order(diabetes_status), .N, by = diabetes_status]
+ggplot(counts, aes(x = diabetes_status, y = N, fill = diabetes_status)) + 
+  geom_bar(stat = "identity") + guides(fill = F) +
+  labs(x = "", y = "n")
+ggsave("population.svg", width = 5, height = 2)
 ```
 
 
@@ -80,7 +82,7 @@ table(meta$diabetes_status)
 Previous metformin treatment/consumption:
 
 ```{r}
-table(meta$metformin, meta$diabetes_status)
+table(meta$metformin == 0, meta$diabetes_status)
 ```
 
 
@@ -195,7 +197,7 @@ ggsave("ordination.svg", width=6, height=4)
 Family distribution:
 
 ```{r, fig.width=12, fig.height=4}
-pl <- plot_taxa(ps)
+pl <- plot_taxa(ps, show_samples = FALSE)
 ggsave("phylum_bars.png", width=12, height=4, dpi=200)
 pl
 ```

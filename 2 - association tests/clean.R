@@ -1,6 +1,6 @@
 library(mbtools)
 
-ps <- readRDS("../data/taxonomy.rds")
+ps <- readRDS("../data/denoised.rds")
 meta <- readxl::read_excel("../data/clinical_new.xlsx", sheet = "clean")
 annotation <- readxl::read_excel("../data/clinical_new.xlsx",
                                  sheet = "annotations_clean")

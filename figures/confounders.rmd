@@ -13,11 +13,14 @@ library(mbtools)
 original <- fread("../data/tests_genus.csv")
 original$strategy <- "without"
 original$response <- "single"
+original$coef <- NA
 filtered <- fread("../data/tests_confounders.csv")
 filtered$strategy <- "with"
+filtered$robust <- TRUE
 
 vars <- c("diabetes_status", "auc_glucose", "num_risk_factors", "bmi", "percent_body_fat", "systolic_pressure", "diastolic_pressure")
-genera <- c("Escherichia/Shigella", "Veillonella", "Anaerostipes", "Blautia")
+genera <- original[variable %in% c("diabetes_status", "num_risk_factors") 
+                & padj < 0.1, names(table(genus))[table(genus) == 2]]
 tests <- rbind(original[variable %in% vars], filtered[variable %in% vars])
 tests <- tests[genus %in% genera]
 tests[, variable := factor(variable, levels=vars)]
@@ -32,18 +35,29 @@ raises towards zero it indicates that the association is confounded. Error bars 
 
 ```{r, fig.width=8, fig.height=4}
 library(ggplot2)
-theme_set(theme_bw())
+theme_set(theme_classic())
 
 pl <- ggplot(tests, aes(x=strategy, y=log2FoldChange, col=genus, group=genus)) +
   geom_hline(yintercept=0, lty="dashed") +
   geom_linerange(aes(ymin=log2FoldChange - lfcSE, ymax=log2FoldChange + lfcSE)) +
-  geom_point() + geom_line(alpha=0.5) + facet_wrap(~ variable, nrow=2) + 
-  labs(x="confounding", y="log2 fold change", color="")
+  geom_point() + geom_line(alpha=0.5) + 
+  facet_wrap(~ variable, nrow=2, labeller = as_labeller(function(x) gsub("_", " ", x))) + 
+  labs(x="confounding", y="coefficient [log2 scale]", color="")
 ggsave("confounding.svg", width=8, height=4)
 pl
 ```
 
 Seems that most associations are actually due to the disease state.
+
+We can also observe what happens to the overall pattern of associations:
+
+```{r}
+filtered[, padj := IHW::adj_pvalues(IHW::ihw(pvalue ~ baseMean, alpha=0.1))]
+filtered[padj < 0.05 & genus %in% genera]
+```
+
+Thus, the only association that holds up significant after confounding is the connection between Escherichia and 
+an altered glucose metabolism.
 
 ## Richness
 

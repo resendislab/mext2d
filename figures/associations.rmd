@@ -14,18 +14,51 @@ output:
 library(mbtools)
 library(ggplot2)
 
-theme_set(theme_bw())
-status_map <- c("healthy", "IFG", "IGT", "IFG+ITG", "T2D", "T2D treated")
+theme_set(theme_classic())
+status_map <- c("NG", "IFG", "IGT", "IFG+ITG", "T2D", "T2D treated")
 
 ps <- readRDS("../data/taxonomy_clean.rds")
 sdata <- sample_data(ps)
 sdata$diabetes_status <- factor(status_map[sdata$diabetes_status], levels=status_map)
 sample_data(ps) <- sdata
 
+annotation <- readxl::read_excel("../data/clinical_new.xlsx",
+                                 sheet = "annotations_clean") %>% as.data.table()
+
 # treatment naive samples
 naive <- subset_samples(ps, as.numeric(diabetes_status) < 6 & metformin == 0)
 ```
 
+Let us also get the association tests from before:
+
+```{r}
+tests <- fread("../data/tests_genus.csv")
+genera <- tests[variable %in% c("diabetes_status", "num_risk_factors") 
+                & padj < 0.1, names(table(genus))[table(genus) == 2]]
+```
+
+And have a look at which diabetes variables associate with which genera:
+
+```{r, fig.width = 5, fig.height = 6}
+library(pheatmap)
+library(scales)
+
+t2dsig <- tests[variable %in% annotation[group == "diabetes", name] & padj < 0.05]
+mat <- dcast(t2dsig, variable ~ genus, value.var = "log2FoldChange")
+rown <- mat[, variable]
+mat[, variable := NULL]
+mat <- as.matrix(mat)
+rownames(mat) <- gsub("_", " ", rown)
+mat[is.na(mat)] <- 0
+
+maxlfc <- t2dsig[, max(abs(log2FoldChange))]
+pheatmap(mat, color = colorRampPalette(c("darkblue", "white", "darkred"))(128),
+         breaks = seq(-maxlfc, maxlfc, length.out = 129), 
+         filename = "diabetes_sig.pdf", width = 5, height = 6)
+
+pheatmap(mat, color = colorRampPalette(c("darkblue", "white", "darkred"))(128),
+         breaks = seq(-maxlfc, maxlfc, length.out = 129))
+```
 
 ## Metformin related changes
 
@@ -35,7 +68,7 @@ Checking for the changes reported earlier.
 data <- plot_counts(ps, "metformin", "genus", c("Escherichia/Shigella", "Intestinibacter"), 
                     normalized=T, only_data=T)
 
-ggplot(data, aes(x=c("metformin-", "metformin+")[as.numeric(value)], y=reads + 0.5, color=value)) + 
+ggplot(data, aes(x=c("metformin-", "metformin+")[2 - (value == 0)], y=reads + 0.5, color=value == 0)) + 
   geom_boxplot() + geom_jitter(width=0.2, alpha=0.5) + guides(color=F) +
   facet_wrap(~ taxa) + scale_y_log10() + labs(x="", y="normalized reads")
 ggsave("metformin.svg", width=6, height=4)
@@ -46,13 +79,13 @@ As you can see only very few samples with metformin treatment. The respective te
 For Intestinibacter:
 
 ```{r}
-wilcox.test(reads ~ value, data[taxa == "Intestinibacter"])
+wilcox.test(reads ~ value == 0, data[taxa == "Intestinibacter"])
 ```
 
 For E. coli:
 
 ```{r}
-wilcox.test(reads ~ value, data[taxa == "Escherichia/Shigella"])
+wilcox.test(reads ~ value == 0, data[taxa == "Escherichia/Shigella"])
 ```
 
 ## Treatment-related changes
@@ -60,8 +93,7 @@ wilcox.test(reads ~ value, data[taxa == "Escherichia/Shigella"])
 ```{r, fig.width=3.5, fig.height=5.5}
 t2d <- subset_samples(ps, as.numeric(diabetes_status) %in% c(1, 5, 6))
 
-genera <- c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Veillonella", "Romboutsia", "Intestinibacter")
-data <- plot_counts(t2d, "diabetes_status", "genus", genera, only_data=T) 
+data <- plot_counts(t2d, "diabetes_status", "genus", c(genera, "Romboutsia", "Intestinibacter"), only_data=T) 
 ggplot(data, aes(x=value, y=reads + 0.5, color=value)) + geom_boxplot(outlier.colour=NA) + guides(color=F) +
   geom_jitter(width=0.25, alpha=0.5, size=0.5) + scale_y_log10() + facet_wrap(~ taxa, ncol=2) + 
   labs(x="", y="normalized reads") + theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust=1))
@@ -71,23 +103,19 @@ ggsave("treated_untreated.svg", width=3.5, height=5.5)
 Corresponding tests:
 
 ```{r}
-tests = data[, .(healthy_vs_T2D = wilcox.test(reads[value == "healthy"],  reads[value == "T2D"])$p.value,
-                 healthy_vs_treated = wilcox.test(reads[value == "healthy"],  reads[value == "T2D treated"])$p.value), by=taxa]
-tests
+treatment = data[, .(NG_vs_T2D = wilcox.test(reads[value == "NG"],  reads[value == "T2D"])$p.value,
+                     NG_vs_treated = wilcox.test(reads[value == "NG"],  reads[value == "T2D treated"])$p.value), 
+                 by=taxa]
+treatment
 ```
 
-## Good cop - bad cop
-
-```{r}
-tests <- fread("../data/tests_genus.csv")
-```
+## Associations with phenotype
 
 ### Diabetes group/status
 
 ```{r, fig.width=6, fig.height=6}
-genera <- c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Veillonella")
 plot_counts(naive, "diabetes_status", "genus", genera, normalized = T) +
-  geom_jitter(width=0.2, alpha=0.25, size=1) + geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
+  geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
   labs(x="", y="normalized reads")
 ggsave("diabetes_status.svg", width=6, height=6)
 ```
@@ -104,7 +132,8 @@ tests[variable == "diabetes_status" & genus %in% genera]
 ```{r, fig.width=6, fig.height=4}
 sdata <- sample_data(naive)
 ggplot(sdata, aes(x=diabetes_status, y=beta_cell_disposition_index, color=diabetes_status)) + 
-  geom_hline(yintercept=2, lty="dashed") + geom_boxplot() + geom_jitter(width=0.25, alpha=0.25) +
+  geom_hline(yintercept=2, lty="dashed") + geom_boxplot(outlier.color = NA) + 
+  geom_jitter(width = 0.2, alpha = 0.5, stroke = 0) +
   labs(x="", y="beta cell disposition")
 sdata$beta_cells_affected <- c("normal", "affected")[(sdata$beta_cell_disposition_index < 2) + 1]
 ggsave("beta_cell_disposition.svg", width=6, height=6)
@@ -113,10 +142,11 @@ sample_data(naive) <- sdata
 ```
 
 ```{r, fig.width=6, fig.height=6}
-genera <- c("Escherichia/Shigella", "Anaerostipes", "Blautia", "Veillonella")
 data <- plot_counts(naive, "beta_cells_affected", "genus", genera, normalized = T, only_data=T)
-ggplot(data[!is.na(value)], aes(x=value, y=reads, color=value)) + geom_boxplot() +
-  geom_jitter(width=0.2, alpha=0.25) + facet_wrap(~ taxa) + scale_y_log10() +
+ggplot(data[!is.na(value)], aes(x=value, y=reads, color=value)) + 
+  geom_boxplot(outlier.color = NA) +
+  geom_jitter(width = 0.2, alpha = 0.5, stroke = 0) + 
+  facet_wrap(~ taxa) + scale_y_log10() +
   labs(x="", y="normalized reads") + guides(color=F)
 ggsave("beta_cell_disposition_index.svg", width=6, height=6)
 ```
@@ -134,9 +164,9 @@ data[, .(pval = wilcox.test(reads ~ value)$p.value), by=taxa]
 
 ### number of risk factors:
 
-```{r, fig.width=6, fig.height=6}
+```{r, fig.width=8, fig.height=6}
 plot_counts(naive, "num_risk_factors", "genus", genera) +
-  geom_jitter(width=0.2, alpha=0.25, size=0.5) + geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
+  geom_smooth(method="glm", aes(group=0, x=as.numeric(value))) +
   labs(x="no. of risk factors", y="normalized reads")
 ggsave("num_risk_factors.svg", width=6, height=6)
 ```
@@ -148,9 +178,31 @@ Corresponding tests:
 tests[variable == "num_risk_factors" & genus %in% genera]
 ```
 
+We can also have a look whether the identified genera associate with the individual risk factors:
+
+```{r, fig.width = 16, fig.height = 8}
+risk_factors <- annotation[risk_factor == 1, name]
+data <- lapply(risk_factors, 
+               function(v) plot_counts(ps, variable = v, taxa = genera, only_data = T))
+data <- rbindlist(data)
+
+ggplot(data[!is.na(value)], aes(x=value, y=reads + 0.5, col=value)) + 
+  geom_boxplot(outlier.color = NA) + 
+  geom_jitter(width = 0.2, alpha = 0.5, size = 1, stroke = 0) +
+  scale_y_log10() + facet_grid(taxa ~ variable, scales = "free_y") +
+  guides(color = FALSE) + labs(x = "", y = "normalized reads")
+ggsave("figS4.png", width = 16, height = 8, dpi = 300)
+```
+
+And the combinations that are individually significant:
+
+```{r}
+tests[variable %in% risk_factors & padj < 0.1 & genus %in% genera]
+```
+
 ### Area under glucose curve
 
-```{r, fig.width=6, fig.height=6}
+```{r, fig.width=8, fig.height=6}
 plot_counts(naive, "auc_glucose", "genus", genera) + geom_smooth(method="glm") +
   labs(x="area under glucose curve", y="normalized reads") + scale_x_log10(breaks=c(2000, 5000, 10000, 20000, 50000))
 ggsave("auc_glucose.svg", width=6, height=6)
@@ -180,9 +232,7 @@ by_genus[order(-nsig)][1:10]
 Significant tests by variable group:
 
 ```{r}
-annotation <- readxl::read_excel("../data/clinical_new.xlsx",
-                                 sheet = "annotations_clean")
-annotated_tests <- merge(tests, annotation, by.x="variable", by.y="name")
+annotated_tests <- tests[annotation, on = c(variable = "name")]
 by_group <- annotated_tests[, .(nsig=sum(padj < 0.05, na.rm=T),
                                 ntests=length(padj),
                                 nvars=uniqueN(variable)), 
@@ -199,9 +249,19 @@ by_genus[order(-nsig)]
 ```
 
 ```{r, fig.width=4, fig.height=3}
-ggplot(by_group, aes(x=nsig, y=percent, color=group)) + geom_point(size=2) +
-  geom_text(aes(label=group), hjust=0, nudge_x=2) + xlim(0, 78) +
+ggplot(by_group[!is.na(group)], aes(x=nsig, y=percent, color=group)) + geom_point(size=2) +
+  geom_text(aes(label=group), hjust=0, nudge_x=2) + xlim(0, 85) +
   labs(x="significant associations", y="positive test rate") + guides(color=F)
 ggsave("sig_plot.svg", width=4, height=3)
 ```
 
+```{r, fig.height=5, fig.width=8}
+by_both <- annotated_tests[padj<0.05, .N, by=c("genus", "group")]
+ord <- by_genus[order(-nsig), genus]
+by_both[, genus := factor(genus, levels = ord)]
+ggplot(by_both, aes(x=genus, y=N, fill=group)) + 
+  geom_bar(stat="identity", position="stack", col="white") +
+  theme(axis.text.x = element_text(angle = 90, hjust=1, vjust=0.5, size = 10)) +
+  labs(x = "", y = "no. significant associations")
+ggsave("significant_by_genus.svg", width=8, height=5)
+```
