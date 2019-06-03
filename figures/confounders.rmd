@@ -16,7 +16,6 @@ original$response <- "single"
 original$coef <- NA
 filtered <- fread("../data/tests_confounders.csv")
 filtered$strategy <- "with"
-filtered$robust <- TRUE
 
 vars <- c("diabetes_status", "auc_glucose", "num_risk_factors", "bmi", "percent_body_fat", "systolic_pressure", "diastolic_pressure")
 genera <- original[variable %in% c("diabetes_status", "num_risk_factors") 
@@ -51,19 +50,11 @@ Seems that most associations are actually due to the disease state.
 
 We can also observe what happens to the overall pattern of associations:
 
-```{r}
-filtered[, padj := IHW::adj_pvalues(IHW::ihw(pvalue ~ baseMean, alpha=0.1))]
-filtered[padj < 0.05 & genus %in% genera]
-```
+## Diversity
 
-Thus, the only association that holds up significant after confounding is the connection between Escherichia and 
-an altered glucose metabolism.
+Diversity was calculated using Shannon index.
 
-## Richness
-
-Richness was calculated using the Chao1 index.
-
-Just to see that association with richness does not depend on overall abundance...
+Just to see that association with diversity does not depend on overall abundance...
 
 ```{r}
 pl <- ggplot(original[variable == "richness"], aes(x=baseMean, y=log2FoldChange, col=(padj > 0.05) | is.na(padj))) +
@@ -74,7 +65,7 @@ ggsave("abundance_vs_richness_lfc.svg", width=5, height=5)
 pl
 ```
 
-Genera which are associated significantly with richness (Shannon index). Error bars denotes the standard error of the log2 fold change (regression coefficient).
+Genera which are associated significantly with diversity (Shannon index). Error bars denotes the standard error of the log2 fold change (regression coefficient).
 
 ```{r, fig.width=5.5, fig.height=4}
 rich <- original[padj < 0.05 & variable == "richness"][order(log2FoldChange)]

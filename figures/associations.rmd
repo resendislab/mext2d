@@ -203,8 +203,11 @@ tests[variable %in% risk_factors & padj < 0.1 & genus %in% genera]
 ### Area under glucose curve
 
 ```{r, fig.width=8, fig.height=6}
-plot_counts(naive, "auc_glucose", "genus", genera) + geom_smooth(method="glm") +
-  labs(x="area under glucose curve", y="normalized reads") + scale_x_log10(breaks=c(2000, 5000, 10000, 20000, 50000))
+data <- plot_counts(naive, "auc_glucose", "genus", genera, only_data = TRUE)
+ggplot(data, aes(x = rank(value), y = reads + 0.5)) +
+  geom_jitter(stroke = 0, alpha = 0.5) + geom_smooth(method="glm") +
+  labs(x = "rank(AUC glucose)", y="normalized reads") + scale_y_log10() +
+  facet_wrap(~ taxa) +
 ggsave("auc_glucose.svg", width=6, height=6)
 ```
 

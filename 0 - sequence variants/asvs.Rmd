@@ -1,0 +1,61 @@
+---
+title: "Obtain sequence variants"
+output: html_notebook
+---
+
+## Obtaining sequence variants
+
+We will start by obtaining a list of the raw fastq files.
+
+```{r}
+library(mbtools)
+
+files <- find_read_files("../data/raw/", dirs_are_runs = TRUE)
+files <- files[!id %in% names(table(id))[table(id) > 1]]
+nrow(files)
+```
+
+We can now perform the quality assessment for all of them.
+
+```{r, warning = FALSE}
+quals <- files %>% quality_control()
+```
+
+We can have a look at the gobal quality profiles for forward and reverse reads.
+
+```{r}
+quals$quality_plot
+```
+
+
+Both show decent quality. We will trim the 5' ends by 10bp to avid the quality bump there
+and truncate the forward reads to 240 bp and the reverse reads to 200 bp to ensure
+qualities above 30 and sufficient overlap for later merging.
+
+We can now proceed to perform the preprocessing and DADA2 workflow in one step. For that
+we will use the following configuration:
+
+```{r}
+config <- list(
+  preprocess = config_preprocess(
+    trimLeft = 10,
+    truncLen = c(240, 200),
+    out_dir = "../data/preprocessed"
+  ),
+  denoise = config_denoise(threads = 8)
+)
+
+config
+```
+
+We can now proceed by running our analyses.
+
+```{r}
+denoised <- quals %>% preprocess(config$preprocess) %>% denoise(config$denoise)
+```
+
+And save the output artifact as a phyloseq object for later use.
+
+```{r}
+saveRDS(as_phyloseq(denoised), "../data/denoised.rds")
+```
