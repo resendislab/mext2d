@@ -12,7 +12,7 @@ variables <- names(sample_data(ps))
 exclude <- grepl("_6months", variables) | grepl("_12months", variables) |
            variables %in% c("id", "treatment_group", "metformin")
 
-tests <- association(ps, variables = variables[!exclude], tax = NA,
+tests <- association(ps, variables = variables[!exclude], taxa_rank= NA,
                      confounders = c("gender"))
 fwrite(tests[order(padj, variable)], "../data/tests_variants.csv")
 

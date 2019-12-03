@@ -43,7 +43,7 @@ And have a look at which diabetes variables associate with which genera:
 library(pheatmap)
 library(scales)
 
-t2dsig <- tests[variable %in% annotation[group == "diabetes", name] & padj < 0.05]
+t2dsig <- tests[variable %in% c(annotation[group == "diabetes", name], "c_reactive_protein", "interleukin_6") & padj < 0.05]
 mat <- dcast(t2dsig, variable ~ genus, value.var = "log2FoldChange")
 rown <- mat[, variable]
 mat[, variable := NULL]
@@ -151,11 +151,15 @@ ggplot(data[!is.na(value)], aes(x=value, y=reads, color=value)) +
 ggsave("beta_cell_disposition_index.svg", width=6, height=6)
 ```
 
+
+
 Corresponding tests:
 
 ```{r}
 tests[variable == "beta_cell_disposition_index" & genus %in% genera]
 ```
+
+
 
 ```{r}
 data[, .(pval = wilcox.test(reads ~ value)$p.value), by=taxa]
@@ -204,7 +208,7 @@ tests[variable %in% risk_factors & padj < 0.1 & genus %in% genera]
 
 ```{r, fig.width=8, fig.height=6}
 data <- plot_counts(naive, "auc_glucose", "genus", genera, only_data = TRUE)
-ggplot(data, aes(x = rank(value), y = reads + 0.5)) +
+ggplot(data, aes(x = value, y = reads + 0.5)) + scale_x_log10() +
   geom_jitter(stroke = 0, alpha = 0.5) + geom_smooth(method="glm") +
   labs(x = "rank(AUC glucose)", y="normalized reads") + scale_y_log10() +
   facet_wrap(~ taxa) +
@@ -215,6 +219,64 @@ Corresponding tests:
 
 ```{r}
 tests[variable == "auc_glucose" & genus %in% genera]
+```
+
+### Inflammation markers
+
+Correlations with diabetes status:
+
+```{r, fig.width=2, fig.height=3}
+cor.test(sdata$c_reactive_protein, as.numeric(sdata$diabetes_status), method="spearman") %>% print()
+cor.test(sdata$interleukin_6, as.numeric(sdata$diabetes_status), method="spearman") %>% print()
+```
+
+CRP in in treatment naive and treated individuals. 
+
+```{r, fig.width=2, fig.height=3}
+t2d <- subset_samples(ps, as.numeric(diabetes_status) %in% c(1, 5, 6))
+t2d_sdata <- as(sample_data(t2d), "data.frame")
+
+ggplot(t2d_sdata, aes(x=diabetes_status, y=c_reactive_protein, color=diabetes_status)) + geom_boxplot(outlier.colour=NA) + guides(color=F) +
+  geom_jitter(width=0.25) + scale_y_log10() +
+  labs(x="", y="CRP [mg/L]") + theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust=1))
+ggsave("crp_treated_untreated.svg", width=2, height=3)
+
+pairwise.wilcox.test(t2d_sdata$c_reactive_protein, t2d_sdata$diabetes_status, "none")
+```
+
+Interleukin 6 in treatment naive and treated individuals.
+
+```{r, fig.width=2, fig.height=3}
+ggplot(t2d_sdata, aes(x=diabetes_status, y=interleukin_6, color=diabetes_status)) + 
+  geom_boxplot(outlier.colour=NA) + guides(color=F) +
+  geom_jitter(width=0.25) + scale_y_log10()
+  labs(x="", y="Interleukin 6 [pg/mL]") + theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust=1))
+ggsave("il6_treated_untreated.svg", width=2, height=3)
+
+pairwise.wilcox.test(t2d_sdata$interleukin_6, t2d_sdata$diabetes_status, "none")
+```
+
+```{r, fig.width=3, fig.height=2.5}
+data <- plot_counts(naive, "c_reactive_protein", "genus", "Veillonella", only_data = TRUE)
+ggplot(data, aes(x = value, y = reads + 0.5)) + scale_x_log10() +
+  geom_jitter(stroke = 0, alpha = 0.5) + geom_smooth(method="glm") +
+  labs(x = "CRP [mg/L]", y="normalized reads") + scale_y_log10()
+ggsave("c_reactive_protein.svg", width=3, height=2.5)
+```
+
+```{r, fig.width=6, fig.height=3}
+data <- plot_counts(naive, "interleukin_6", "genus", c("Anaerostipes", "Blautia"), normalized = T, only_data=T)
+ggplot(data, aes(x = value, y = reads + 0.5)) + scale_x_log10() +
+  geom_jitter(stroke = 0, alpha = 0.5) + geom_smooth(method="glm") +
+  labs(x = "Interleukin 6 [pg/mL]", y="normalized reads") + scale_y_log10() +
+  facet_wrap(~ taxa)
+ggsave("interleukin_6.svg", width=6, height=3)
+```
+
+Tests:
+
+```{r}
+tests[variable %in% c("c_reactive_protein", "interleukin_6") & genus %in% genera]
 ```
 
 ## General test stats
