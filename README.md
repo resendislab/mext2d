@@ -1,14 +1,13 @@
 ## Analysis scripts for 16S
 
-Analysis scripts and discussion for the samples from Guanajuato. Also see
-the [Trello board](https://trello.com/b/rHtrpyiz/microbiome) for more info.
+Analysis scripts and discussion for the MEXT2D project.
 
-Makes use of helper functions from our [general pipeline](https://github.com/resendislab/microbiome).
+Makes use of helper functions from our [general pipeline](https://github.com/resendislab/mbtools).
 
 ### Getting set up
 
 To make installation easier all functionality required is implemented is
-delivered with a [specialized R package](https://github.com/resendislab/microbiome).
+delivered with a [specialized R package](https://github.com/resendislab/mbtools).
 You can use the provided docker container from there or install it yourself.
 
 You will need [R (>=3.4)](https://r-project.org). To install the package you
@@ -18,7 +17,7 @@ will need `devtools` and bioconductor. Open an R session and run the following:
 install.packages("devtools")
 source("https://bioconductor.org/biocLite.R")
 biocLite("BiocInstaller")
-devtools::install_github("cdiener/microbiome/mbtools")
+devtools::install_github("resendislab/mbtools")
 ```
 
 Now you're ready to go :)
