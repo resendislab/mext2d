@@ -210,7 +210,7 @@ tests[variable %in% risk_factors & padj < 0.1 & genus %in% genera]
 data <- plot_counts(naive, "auc_glucose", "genus", genera, only_data = TRUE)
 ggplot(data, aes(x = value, y = reads + 0.5)) + scale_x_log10() +
   geom_jitter(stroke = 0, alpha = 0.5) + geom_smooth(method="glm") +
-  labs(x = "rank(AUC glucose)", y="normalized reads") + scale_y_log10() +
+  labs(x = "AUC glucose", y="normalized reads") + scale_y_log10() +
   facet_wrap(~ taxa) +
 ggsave("auc_glucose.svg", width=6, height=6)
 ```
@@ -249,7 +249,7 @@ Interleukin 6 in treatment naive and treated individuals.
 ```{r, fig.width=2, fig.height=3}
 ggplot(t2d_sdata, aes(x=diabetes_status, y=interleukin_6, color=diabetes_status)) + 
   geom_boxplot(outlier.colour=NA) + guides(color=F) +
-  geom_jitter(width=0.25) + scale_y_log10()
+  geom_jitter(width=0.25) + scale_y_log10() +
   labs(x="", y="Interleukin 6 [pg/mL]") + theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust=1))
 ggsave("il6_treated_untreated.svg", width=2, height=3)
 
@@ -314,7 +314,10 @@ by_genus[order(-nsig)]
 ```
 
 ```{r, fig.width=4, fig.height=3}
-ggplot(by_group[!is.na(group)], aes(x=nsig, y=percent, color=group)) + geom_point(size=2) +
+ggplot(by_group[!is.na(group)], aes(x=nsig, y=percent, color=group)) +  
+  stat_smooth(aes(group = 1), method = "glm", color = "black", se = F, 
+              lty = "dashed") +
+  geom_point(size=2) +
   geom_text(aes(label=group), hjust=0, nudge_x=2) + xlim(0, 85) +
   labs(x="significant associations", y="positive test rate") + guides(color=F)
 ggsave("sig_plot.svg", width=4, height=3)
@@ -327,6 +330,6 @@ by_both[, genus := factor(genus, levels = ord)]
 ggplot(by_both, aes(x=genus, y=N, fill=group)) + 
   geom_bar(stat="identity", position="stack", col="white") +
   theme(axis.text.x = element_text(angle = 90, hjust=1, vjust=0.5, size = 10)) +
-  labs(x = "", y = "no. significant associations")
+  labs(x = "", y = "no. significant associations", fill = "")
 ggsave("significant_by_genus.svg", width=8, height=5)
 ```
